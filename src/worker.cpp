@@ -48,10 +48,13 @@ void QuotaWorker::run() {
     QuotaState state;
     std::unique_ptr<CodexSource> source;
     std::string account_identity;
+    Json service_before;
+    Clock::time_point service_started{};
+    uint64_t polls = 0, notifications = 0;
     while (!stop_) {
         const bool visible = visible_;
         if (visible != last_visible) {
-            due = visible ? Clock::now() : Clock::now() + std::chrono::seconds(300);
+            due = visible ? Clock::now() : Clock::now() + std::chrono::seconds(poll_seconds(false));
             last_visible = visible;
         }
         const bool requested = refresh_.exchange(false);
@@ -80,10 +83,15 @@ void QuotaWorker::run() {
                     }
                     due = Clock::now() + std::chrono::seconds(visible ? 4 : 300);
                 } else {
+                    const auto read_started = Clock::now();
                     if (!source) {
                         source = std::make_unique<CodexSource>(codex_path(), &stop_);
+                        service_before = source->resources();
+                        service_started = Clock::now();
+                        polls = notifications = 0;
                         source->on_notification = [&](const Json &message) {
                             if (message.value("method", "") == "account/rateLimits/updated") {
+                                ++notifications;
                                 state.accept(message.value("params", Json::object()), true);
                                 publish(state);
                             }
@@ -103,11 +111,27 @@ void QuotaWorker::run() {
                         state = QuotaState{};
                     account_identity = identity;
                     state.accept(source->request("account/rateLimits/read", Json::object(), stop_));
+                    ++polls;
+                    const auto finished = Clock::now();
                     {
                         std::lock_guard lock(mutex_);
                         resources_ = source->resources();
+                        resources_["pollCount"] = polls;
+                        resources_["notificationCount"] = notifications;
+                        resources_["lastReadMs"] =
+                            std::chrono::duration<double, std::milli>(finished - read_started).count();
+                        const double observed =
+                            std::chrono::duration<double>(finished - service_started).count();
+                        resources_["observedSeconds"] = observed;
+                        resources_["averageCpuOneCorePercent"] =
+                            observed > 0 ? 100 *
+                                               (resources_["cpuSeconds"].get<double>() -
+                                                service_before["cpuSeconds"].get<double>()) /
+                                               observed
+                                         : 0;
                     }
-                    due = Clock::now() + std::chrono::seconds(visible ? 60 : 300);
+                    // Keep a ten-second cadence for normal replies; never burst to catch up after a slow one.
+                    due = next_poll(read_started, finished, visible);
                 }
                 failures = 0;
                 publish(state);

@@ -4,8 +4,12 @@
 It publishes a bounded latest-state slot and posts a window message; no UI callback waits for a quota response.
 Showing the window and constructing Direct2D do not depend on the server. Shutdown cancels a pending handshake/read.
 
-Visible polling: 60 seconds after a completed read. Hidden/locked/display-off: 300 seconds.
-Notifications are drained without initiating remote work; polling remains authoritative.
+Visible polling: every 10 seconds, measured from the start of a successful read. Hidden/locked/display-off: 300 seconds.
+If a request outlasts the interval, the next read is delayed by a full interval to avoid catch-up bursts.
+Requests run sequentially on the existing server, without creating a new process for each poll.
+Notifications are drained at most one second after arrival while idle, without initiating remote work;
+polling remains the reliable fallback because Desktop-originated quota notifications have not been observed locally.
+This is not a guarantee of real-time backend data: network latency, server updates and errors can delay values.
 Manual refresh and resume trigger an immediate read. Errors retain the last state and use bounded retry delays
 (5, 10, 20… up to 900 seconds visible; at least 300 seconds hidden). Account changes clear the previous account's values.
 
