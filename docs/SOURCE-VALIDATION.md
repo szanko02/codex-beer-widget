@@ -29,7 +29,16 @@ Raw account-specific results are ignored under `.local/` and must not be uploade
 
 ## Native client gate
 
-Native `CodexQuotaProbe.exe` validation, process-tree accounting and fake-server CTest results will be recorded here.
+Native `CodexQuotaProbe.exe` from CI commit `10cc86e` passed fixture tests and two independent live launches
+(2.12 s and 1.31 s to first data). Commit `84336f3` additionally measured the **whole supervised job**:
+two active service processes, 53.34 → 54.67 MiB working set, 23.66 → 24.82 MiB private memory,
+0.21875 → 0.546875 seconds CPU over 65.19 seconds, or 0.5033% of one logical core.
+That total supersedes the single-server memory figure for estimating deployment overhead.
+Four reads were made after 15-second sleeps; the production default will be less frequent.
+No push notifications appeared in this native run either. The native client used existing Codex sign-in.
+The window durations and reset timestamps matched the Desktop account's independently queried windows.
+
+MSVC 19.44.35228 and Windows SDK 10.0.26100 were installed locally for subsequent builds.
 Clean-machine sign-in, expired authorization and a Windows reboot remain separate acceptance tests.
 No inference is made that restarting App Server is equivalent to rebooting Windows.
 
