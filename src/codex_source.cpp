@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <psapi.h>
 
 namespace beer {
 namespace {
@@ -130,5 +131,26 @@ Json CodexSource::request(const std::string& method, const Json& params, const s
 }
 void CodexSource::pump(const std::function<void(const Json&)>& notification) {
     for (const auto& m : receive()) if (m.contains("method")) notification(m);
+}
+Json CodexSource::resources() const {
+    JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accounting{};
+    check(QueryInformationJobObject(job_, JobObjectBasicAccountingInformation, &accounting, sizeof(accounting), nullptr), "Job accounting failed");
+    alignas(JOBOBJECT_BASIC_PROCESS_ID_LIST) unsigned char storage[sizeof(JOBOBJECT_BASIC_PROCESS_ID_LIST) + 64 * sizeof(ULONG_PTR)]{};
+    auto* ids = reinterpret_cast<JOBOBJECT_BASIC_PROCESS_ID_LIST*>(storage);
+    check(QueryInformationJobObject(job_, JobObjectBasicProcessIdList, ids, sizeof(storage), nullptr), "Process accounting failed");
+    double working = 0, committed = 0;
+    for (DWORD i = 0; i < ids->NumberOfProcessIdsInList; ++i) {
+        HANDLE p = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, FALSE, static_cast<DWORD>(ids->ProcessIdList[i]));
+        if (!p) continue;
+        PROCESS_MEMORY_COUNTERS_EX memory{}; memory.cb = sizeof(memory);
+        if (GetProcessMemoryInfo(p, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&memory), sizeof(memory))) {
+            working += static_cast<double>(memory.WorkingSetSize) / 1048576;
+            committed += static_cast<double>(memory.PrivateUsage) / 1048576;
+        }
+        CloseHandle(p);
+    }
+    return {{"activeProcesses", accounting.ActiveProcesses}, {"totalProcesses", accounting.TotalProcesses},
+        {"workingSetMiB", working}, {"privateMiB", committed},
+        {"cpuSeconds", static_cast<double>(accounting.TotalKernelTime.QuadPart + accounting.TotalUserTime.QuadPart) / 10000000}};
 }
 }

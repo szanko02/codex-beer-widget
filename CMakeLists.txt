@@ -13,7 +13,7 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 add_library(widget_source src/codex_source.cpp)
 target_include_directories(widget_source PUBLIC src)
-target_link_libraries(widget_source PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(widget_source PUBLIC nlohmann_json::nlohmann_json psapi)
 target_compile_definitions(widget_source PUBLIC UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
 target_compile_options(widget_source PUBLIC /W4 /permissive- /utf-8 /EHsc)
 add_executable(CodexQuotaProbe src/probe_main.cpp)

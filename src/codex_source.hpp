@@ -18,6 +18,7 @@ public:
     Json request(const std::string& method, const Json& params, const std::atomic_bool& stop);
     void pump(const std::function<void(const Json&)>& notification);
     DWORD pid() const { return process_ ? GetProcessId(process_) : 0; }
+    Json resources() const;
 private:
     HANDLE process_{}, job_{}, input_{}, output_{}, error_{};
     std::string buffered_;
