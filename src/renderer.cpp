@@ -64,6 +64,9 @@ void Renderer::text(const std::wstring& value,D2D1_RECT_F bounds,uint32_t rgb) {
     color(rgb); dc_->DrawTextW(value.c_str(),static_cast<UINT32>(value.size()),text_.Get(),bounds,brush_.Get(),D2D1_DRAW_TEXT_OPTIONS_CLIP);
 }
 void Renderer::update_theme(const Theme& t) {
+    if(!cached_valid_||t.fill_left!=cached_.fill_left||t.fill_top!=cached_.fill_top||t.fill_right!=cached_.fill_right||t.fill_bottom!=cached_.fill_bottom){
+        inside_.Reset();hr(factory_->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(t.fill_left,t.fill_top,t.fill_right,t.fill_bottom),13,13),&inside_));
+    }
     if (!cached_valid_ || t.text_size != cached_.text_size) {
         text_.Reset(); hr(write_->CreateTextFormat(L"Segoe UI",nullptr,DWRITE_FONT_WEIGHT_SEMI_BOLD,DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL,t.text_size,L"ru-RU",&text_));
@@ -97,20 +100,21 @@ void Renderer::draw(const Theme& t,double remaining,double secondary,const std::
         color(0xb5cbd7,.75f); dc_->DrawRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(38,34,177,233),21,21),brush_.Get(),2);
         dc_->PushLayer(D2D1::LayerParameters1(D2D1::InfiniteRect(),inside_.Get()),nullptr);
         if (remaining>=0 && level>0) {
-            const float top=220-174*level/100;
-            dc_->FillRectangle(D2D1::RectF(47,top,167,220),beer_.Get());
+            const float top=t.fill_bottom-(t.fill_bottom-t.fill_top)*level/100;
+            const float center=(t.fill_left+t.fill_right)/2, width=t.fill_right-t.fill_left;
+            dc_->FillRectangle(D2D1::RectF(t.fill_left,top,t.fill_right,t.fill_bottom),beer_.Get());
             const float wave=t.decoration ? static_cast<float>(std::sin(phase*1.7)*t.waves*2) : 0.f;
-            color(0xffe6a2,t.liquid_alpha); dc_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(107,top+3),62,3+wave),brush_.Get());
-            dc_->PushAxisAlignedClip(D2D1::RectF(47,top,167,220),D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+            color(0xffe6a2,t.liquid_alpha); dc_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(center,top+3),width/2+2,3+wave),brush_.Get());
+            dc_->PushAxisAlignedClip(D2D1::RectF(t.fill_left,top,t.fill_right,t.fill_bottom),D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
             for(int i=0;i<t.bubbles && i<24;i++) {
-                const float x=55+static_cast<float>((i*37)%103);
-                const float y=220-static_cast<float>(std::fmod(i*13.7+(t.decoration?phase*13:0), (std::max)(1.f,220-top)));
+                const float x=t.fill_left+4+static_cast<float>((i*37)%103)/103*(width-8);
+                const float y=t.fill_bottom-static_cast<float>(std::fmod(i*13.7+(t.decoration?phase*13:0), (std::max)(1.f,t.fill_bottom-top)));
                 color(0xfff0bf,.48f); dc_->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(x,y),1.2f+(i%3)*.4f,1.6f+(i%3)*.4f),brush_.Get(),.8f);
             }
             dc_->PopAxisAlignedClip();
             if(t.foam>0) {
                 color(0xfff3d0,t.foam);
-                for(int i=0;i<10;i++) dc_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(50+i*13.f,top+3+((i%3)-1)*wave),10,2+t.foam*5),brush_.Get());
+                for(int i=0;i<10;i++) dc_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(t.fill_left+i*width/9,top+3+((i%3)-1)*wave),width/12,2+t.foam*5),brush_.Get());
             }
         }
         dc_->PopLayer();

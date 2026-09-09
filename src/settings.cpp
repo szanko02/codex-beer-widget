@@ -34,6 +34,13 @@ Settings settings_from_json(const Json& j){
         s.theme.foam=number(t,"foam",.65f,0.f,1.f);s.theme.waves=number(t,"waves",.35f,0.f,1.f);s.theme.bubbles=number(t,"bubbles",12,0,24);
         s.theme.transition_seconds=number(t,"transitionSeconds",.8f,.1f,5.f);s.theme.text_size=number(t,"textSize",18.f,10.f,28.f);
         s.theme.show_percent=boolean(t,"showPercent",true);s.theme.decoration=boolean(t,"decoration",true);s.theme.ring=boolean(t,"ring",false);
+        if(t.contains("resources")&&t["resources"].is_object()){
+            const auto geometry=string(t["resources"],"geometry");if(geometry=="ring")s.theme.ring=true;else if(geometry=="beer-mug")s.theme.ring=false;
+        }
+        if(t.contains("fillArea")&&t["fillArea"].is_object()){
+            const auto& area=t["fillArea"];s.theme.fill_left=number(area,"left",47.f,47.f,150.f);s.theme.fill_top=number(area,"top",46.f,46.f,200.f);
+            s.theme.fill_right=number(area,"right",167.f,s.theme.fill_left+8,167.f);s.theme.fill_bottom=number(area,"bottom",220.f,s.theme.fill_top+8,220.f);
+        }
     }
     return s;
 }
@@ -44,7 +51,8 @@ Json settings_to_json(const Settings& s){
         {"monitor",s.monitor},{"group",s.group},{"windowIndex",s.window_index},
         {"theme",{{"liquidColor",t.liquid_color},{"textColor",t.text_color},{"glassAlpha",t.glass_alpha},{"liquidAlpha",t.liquid_alpha},
             {"foam",t.foam},{"waves",t.waves},{"bubbles",t.bubbles},{"transitionSeconds",t.transition_seconds},{"textSize",t.text_size},
-            {"showPercent",t.show_percent},{"decoration",t.decoration},{"ring",t.ring}}}};
+            {"showPercent",t.show_percent},{"decoration",t.decoration},{"ring",t.ring},
+            {"resources",{{"geometry",t.ring?"ring":"beer-mug"}}},{"fillArea",{{"left",t.fill_left},{"top",t.fill_top},{"right",t.fill_right},{"bottom",t.fill_bottom}}}}}};
 }
 Settings load_settings(std::string& error){
     try{auto file=settings_directory()/L"settings.json";if(!std::filesystem::exists(file))return {};

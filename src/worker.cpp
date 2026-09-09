@@ -3,7 +3,7 @@
 namespace beer {
 QuotaWorker::QuotaWorker(HWND window,bool demo,bool visible):window_(window),demo_(demo),visible_(visible){thread_=std::thread([this]{run();});}
 QuotaWorker::~QuotaWorker(){stop_=true;wake_.notify_all();if(thread_.joinable())thread_.join();}
-void QuotaWorker::set_visible(bool visible){visible_=visible;if(visible)refresh_=true;wake_.notify_all();}
+void QuotaWorker::set_visible(bool visible){const bool previous=visible_.exchange(visible);if(previous!=visible){if(visible)refresh_=true;wake_.notify_all();}}
 void QuotaWorker::refresh(){refresh_=true;wake_.notify_all();}
 std::optional<QuotaState> QuotaWorker::take(){std::lock_guard lock(mutex_);auto value=std::move(latest_);latest_.reset();return value;}
 Json QuotaWorker::resources(){std::lock_guard lock(mutex_);return resources_;}

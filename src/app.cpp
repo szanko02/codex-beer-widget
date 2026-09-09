@@ -1,6 +1,7 @@
 #include "renderer.hpp"
 #include "settings.hpp"
 #include "worker.hpp"
+#include "settings_ui.hpp"
 #include <windowsx.h>
 #include <commctrl.h>
 #include <shellapi.h>
@@ -17,7 +18,6 @@ enum Command { ToggleTop=101,ToggleLock,ToggleClicks,Quit,ToggleShow,OpenSetting
     SizeSlider=201,HotkeyControl,ApplySettings,AutorunControl,SnapControl };
 constexpr UINT TrayMessage=WM_APP+1,RestoreMessage=WM_APP+7;
 constexpr UINT AnimationTimer=10;
-LRESULT CALLBACK settings_proc(HWND,UINT,WPARAM,LPARAM);
 std::string utf8(const std::wstring& s){if(s.empty())return {};int n=WideCharToMultiByte(CP_UTF8,0,s.data(),static_cast<int>(s.size()),nullptr,0,nullptr,nullptr);std::string r(n,0);WideCharToMultiByte(CP_UTF8,0,s.data(),static_cast<int>(s.size()),r.data(),n,nullptr,nullptr);return r;}
 std::wstring wide(const std::string& s){if(s.empty())return {};int n=MultiByteToWideChar(CP_UTF8,0,s.data(),static_cast<int>(s.size()),nullptr,0);std::wstring r(n,0);MultiByteToWideChar(CP_UTF8,0,s.data(),static_cast<int>(s.size()),r.data(),n);return r;}
 std::wstring duration(const beer::QuotaWindow& w){if(!w.minutes)return L"окно без длительности";auto n=*w.minutes;if(n%1440==0)return std::to_wstring(n/1440)+L" дн.";if(n%60==0)return std::to_wstring(n/60)+L" ч";return std::to_wstring(n)+L" мин";}
@@ -38,6 +38,7 @@ struct App {
     HPOWERNOTIFY power_notify{};
     std::chrono::steady_clock::time_point phase_start=std::chrono::steady_clock::now();
     beer::Settings settings;
+    std::unique_ptr<beer::SettingsWindow> panel;
     beer::Theme& theme=settings.theme;
     bool& top=settings.top;bool& locked=settings.locked;bool& clicks=settings.click_through;
     int& height=settings.height;
@@ -73,6 +74,7 @@ struct App {
         if(state.updated.time_since_epoch().count())tooltip_text+=L"Обновлено: "+timestamp(std::chrono::system_clock::to_time_t(state.updated))+L"\n";
         if(state.stale)tooltip_text+=L"Устарело: "+wide(state.error);
         if(tooltip){TOOLINFOW info{sizeof(info)};info.hwnd=window;info.uId=1;info.lpszText=tooltip_text.data();SendMessageW(tooltip,TTM_UPDATETIPTEXTW,0,reinterpret_cast<LPARAM>(&info));}
+        if(panel){std::vector<std::pair<std::string,std::wstring>> groups;for(const auto& [id,entry]:state.groups)groups.emplace_back(id,wide(entry.name));panel->status(tooltip_text,groups);}
         schedule();paint();
     }
     void tip(bool visible){if(!tooltip)return;TOOLINFOW info{sizeof(info)};info.hwnd=window;info.uId=1;
@@ -89,8 +91,9 @@ struct App {
         Shell_NotifyIconW(remove?NIM_DELETE:NIM_ADD,&icon);
         if(!remove){icon.uVersion=NOTIFYICON_VERSION_4;Shell_NotifyIconW(NIM_SETVERSION,&icon);}
     }
-    void show(bool visible){settings.visible=visible;ShowWindow(window,visible&&!clicks?SW_SHOWNOACTIVATE:SW_HIDE);
-        if(visible&&clicks)paint();ShowWindow(overlay,visible&&clicks?SW_SHOWNOACTIVATE:SW_HIDE);if(visible)paint();else tip(false);lifecycle();save();}
+    void show(bool visible,bool persist=true){settings.visible=visible;ShowWindow(window,visible&&!clicks?SW_SHOWNOACTIVATE:SW_HIDE);
+        if(visible&&!clicks)SetWindowPos(window,nullptr,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_SHOWWINDOW);
+        if(visible&&clicks)paint();ShowWindow(overlay,visible&&clicks?SW_SHOWNOACTIVATE:SW_HIDE);if(visible)paint();else tip(false);lifecycle();if(persist)save();}
     void recover(bool primary=false){
         RECT rc{};GetWindowRect(window,&rc);HMONITOR monitor=primary?MonitorFromPoint(POINT{0,0},MONITOR_DEFAULTTOPRIMARY):MonitorFromRect(&rc,MONITOR_DEFAULTTONEAREST);
         MONITORINFO info{sizeof(info)};GetMonitorInfoW(monitor,&info);
@@ -108,20 +111,23 @@ struct App {
         hotkey_id=candidate;hotkey_ok=true;settings.hotkey_modifiers=modifiers;settings.hotkey=key;return true;
     }
     void open_settings(){
-        if(settings_window){ShowWindow(settings_window,SW_SHOWNORMAL);SetForegroundWindow(settings_window);return;}
-        settings_window=CreateWindowExW(0,L"CodexBeerWidget.Settings",L"Настройки Codex Beer Widget",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,
-            CW_USEDEFAULT,CW_USEDEFAULT,480,320,nullptr,nullptr,GetModuleHandleW(nullptr),this);
-        if(!settings_window)throw std::runtime_error("Cannot create settings window");
-        ShowWindow(settings_window,SW_SHOWNORMAL);
-        SetWindowPos(settings_window,nullptr,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
-        SetForegroundWindow(settings_window);
+        if(!panel){beer::SettingsActions actions;
+            actions.changed=[this](bool persist){size(height);show(settings.visible,false);update_view();if(persist)save();};
+            actions.hotkey=[this](unsigned modifiers,unsigned key){return register_hotkey(modifiers,key);};
+            actions.refresh=[this]{if(worker)worker->refresh();};actions.restore=[this]{recover(true);};actions.toggle_visibility=[this]{show(!settings.visible);};
+            actions.closed=[this]{settings_window=nullptr;};actions.is_demo=[this]{return demo;};
+            actions.demonstration=[this](bool value){worker.reset();demo=value;state=beer::QuotaState{};previous_window.reset();current_remaining=-1;update_view();worker=std::make_unique<beer::QuotaWorker>(window,demo,active());};
+            panel=std::make_unique<beer::SettingsWindow>(settings,std::move(actions));}
+        panel->open();settings_window=panel->window();update_view();
     }
     void region() {
         RECT rc{}; GetClientRect(window,&rc);
         const double sx=rc.right/240.,sy=rc.bottom/300.;
         auto round=[&](int l,int t,int r,int b,int radius) {return CreateRoundRectRgn(int(l*sx),int(t*sy),int(r*sx)+1,int(b*sy)+1,int(radius*sx),int(radius*sy));};
         HRGN result=round(37,32,178,234,42), handle=round(158,77,214,184,40),hole=round(172,91,201,170,26);
-        CombineRgn(handle,handle,hole,RGN_DIFF); CombineRgn(result,result,handle,RGN_OR);
+        if(theme.ring){DeleteObject(result);result=CreateEllipticRgn(int(35*sx),int(45*sy),int(205*sx)+1,int(215*sy)+1);
+            HRGN center=CreateEllipticRgn(int(50*sx),int(60*sy),int(190*sx),int(200*sy));CombineRgn(result,result,center,RGN_DIFF);DeleteObject(center);}
+        else{CombineRgn(handle,handle,hole,RGN_DIFF); CombineRgn(result,result,handle,RGN_OR);}
         HRGN label=round(26,240,214,300,25); CombineRgn(result,result,label,RGN_OR);
         DeleteObject(handle); DeleteObject(hole); DeleteObject(label);
         if(!SetWindowRgn(window,result,TRUE)) DeleteObject(result);
@@ -216,52 +222,20 @@ LRESULT CALLBACK procedure(HWND window,UINT message,WPARAM w,LPARAM l) {
     }catch(const std::exception&){MessageBoxW(window,L"Не удалось создать или обновить графику Direct2D.",L"Codex Beer Widget",MB_ICONERROR);DestroyWindow(window);return 0;}
     return DefWindowProcW(window,message,w,l);
 }
-LRESULT CALLBACK settings_proc(HWND window,UINT message,WPARAM w,LPARAM l){
-    auto* app=reinterpret_cast<App*>(GetWindowLongPtrW(window,GWLP_USERDATA));
-    if(message==WM_NCCREATE){app=static_cast<App*>(reinterpret_cast<CREATESTRUCTW*>(l)->lpCreateParams);SetWindowLongPtrW(window,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(app));}
-    if(!app)return DefWindowProcW(window,message,w,l);
-    switch(message){
-    case WM_CREATE:{
-        auto control=[&](const wchar_t* kind,const wchar_t* label,int style,int id,int x,int y,int width,int height){
-            HWND child=CreateWindowExW(0,kind,label,WS_CHILD|WS_VISIBLE|style,x,y,width,height,window,reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)),GetModuleHandleW(nullptr),nullptr);
-            SendMessageW(child,WM_SETFONT,reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)),TRUE);return child;};
-        control(L"STATIC",L"Высота виджета: 80–400 DIP",0,0,20,20,400,24);
-        HWND slider=control(TRACKBAR_CLASSW,L"Размер",TBS_AUTOTICKS|WS_TABSTOP,SizeSlider,20,48,420,36);
-        SendMessageW(slider,TBM_SETRANGE,TRUE,MAKELPARAM(80,400));SendMessageW(slider,TBM_SETPOS,TRUE,app->height);
-        control(L"STATIC",L"Горячая клавиша показа / скрытия",0,0,20,98,400,24);
-        HWND hotkey=control(HOTKEY_CLASSW,L"Горячая клавиша",WS_TABSTOP,HotkeyControl,20,125,240,28);
-        unsigned modifiers=((app->settings.hotkey_modifiers&MOD_CONTROL)?HOTKEYF_CONTROL:0)|((app->settings.hotkey_modifiers&MOD_ALT)?HOTKEYF_ALT:0)|((app->settings.hotkey_modifiers&MOD_SHIFT)?HOTKEYF_SHIFT:0);
-        SendMessageW(hotkey,HKM_SETHOTKEY,MAKEWORD(app->settings.hotkey,modifiers),0);
-        control(L"BUTTON",L"Применить",BS_PUSHBUTTON|WS_TABSTOP,ApplySettings,285,125,155,28);
-        HWND autorun=control(L"BUTTON",L"Запускать при входе в Windows",BS_AUTOCHECKBOX|WS_TABSTOP,AutorunControl,20,175,400,28);
-        SendMessageW(autorun,BM_SETCHECK,app->settings.autorun?BST_CHECKED:BST_UNCHECKED,0);
-        HWND snap=control(L"BUTTON",L"Привязывать к краям экрана",BS_AUTOCHECKBOX|WS_TABSTOP,SnapControl,20,215,400,28);
-        SendMessageW(snap,BM_SETCHECK,app->settings.snap?BST_CHECKED:BST_UNCHECKED,0);return 0;}
-    case WM_HSCROLL:if(GetDlgCtrlID(reinterpret_cast<HWND>(l))==SizeSlider){app->size(static_cast<int>(SendMessageW(reinterpret_cast<HWND>(l),TBM_GETPOS,0,0)));if(LOWORD(w)==TB_ENDTRACK)app->save();}return 0;
-    case WM_COMMAND:
-        if(LOWORD(w)==ApplySettings){const auto hot=SendDlgItemMessageW(window,HotkeyControl,HKM_GETHOTKEY,0,0);const auto flags=HIBYTE(hot);
-            unsigned modifiers=((flags&HOTKEYF_CONTROL)?MOD_CONTROL:0)|((flags&HOTKEYF_ALT)?MOD_ALT:0)|((flags&HOTKEYF_SHIFT)?MOD_SHIFT:0);
-            if(!app->register_hotkey(modifiers,LOBYTE(hot)))MessageBoxW(window,L"Комбинация занята или недопустима. Используйте Ctrl или Alt с буквой/цифрой.",L"Горячая клавиша",MB_ICONWARNING);else app->save();}
-        if(LOWORD(w)==SnapControl){app->settings.snap=IsDlgButtonChecked(window,SnapControl)==BST_CHECKED;app->save();}
-        if(LOWORD(w)==AutorunControl){const bool enabled=IsDlgButtonChecked(window,AutorunControl)==BST_CHECKED;try{beer::set_autorun(enabled);app->settings.autorun=enabled;app->save();}catch(...){CheckDlgButton(window,AutorunControl,app->settings.autorun?BST_CHECKED:BST_UNCHECKED);MessageBoxW(window,L"Не удалось изменить автозапуск.",L"Настройки",MB_ICONWARNING);}}return 0;
-    case WM_CLOSE:DestroyWindow(window);return 0;
-    case WM_DESTROY:app->settings_window=nullptr;return 0;
-    }
-    return DefWindowProcW(window,message,w,l);
-}
+
 }
 int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR arguments,int) {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED);
     HANDLE singleton=CreateMutexW(nullptr,FALSE,L"Local\\CodexBeerWidget.Instance");
-    if(GetLastError()==ERROR_ALREADY_EXISTS){if(HWND existing=FindWindowW(window_class,nullptr))PostMessageW(existing,RestoreMessage,0,0);if(singleton)CloseHandle(singleton);CoUninitialize();return 0;}
-    INITCOMMONCONTROLSEX controls{sizeof(controls),ICC_BAR_CLASSES|ICC_HOTKEY_CLASS};InitCommonControlsEx(&controls);
+    if(GetLastError()==ERROR_ALREADY_EXISTS){if(HWND existing=FindWindowW(window_class,nullptr))PostMessageW(existing,std::wstring(arguments).find(L"--quit")!=std::wstring::npos?WM_CLOSE:RestoreMessage,0,0);if(singleton)CloseHandle(singleton);CoUninitialize();return 0;}
+    if(std::wstring(arguments).find(L"--quit")!=std::wstring::npos){if(singleton)CloseHandle(singleton);CoUninitialize();return 0;}
+    INITCOMMONCONTROLSEX controls{sizeof(controls),ICC_BAR_CLASSES|ICC_HOTKEY_CLASS|ICC_TAB_CLASSES|ICC_STANDARD_CLASSES};InitCommonControlsEx(&controls);
     App app;
     std::string settings_error;app.settings=beer::load_settings(settings_error);
     app.demo=std::wstring(arguments).find(L"--demo")!=std::wstring::npos;
     WNDCLASSEXW wc{sizeof(wc)};wc.hInstance=instance;wc.lpszClassName=window_class;wc.lpfnWndProc=procedure;wc.hCursor=LoadCursorW(nullptr,IDC_ARROW);
     RegisterClassExW(&wc);
-    WNDCLASSEXW sc=wc;sc.lpszClassName=L"CodexBeerWidget.Settings";sc.lpfnWndProc=settings_proc;sc.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);RegisterClassExW(&sc);
     const bool inspect=std::wstring(arguments).find(L"--inspect")!=std::wstring::npos;
     HWND window=CreateWindowExW((inspect?WS_EX_APPWINDOW:(WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE))|WS_EX_NOREDIRECTIONBITMAP,window_class,L"Codex Beer Widget",WS_POPUP,app.settings.x,app.settings.y,192,240,nullptr,nullptr,instance,&app);
     if(!window){CoUninitialize();return 1;}
