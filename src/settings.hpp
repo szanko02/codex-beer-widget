@@ -10,6 +10,7 @@ struct Settings {
     bool top = true, locked = false, click_through = false, visible = true, snap = true, autorun = false;
     unsigned hotkey_modifiers = MOD_CONTROL | MOD_ALT, hotkey = 'B';
     std::string monitor, group;
+    std::optional<int> monitor_offset_x, monitor_offset_y;
     int window_index = 0;
 };
 std::filesystem::path settings_directory();
