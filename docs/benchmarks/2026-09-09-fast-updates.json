@@ -1,0 +1,69 @@
+{
+  "baseline60Seconds": {
+    "after": {
+      "cpuSeconds": 0.359375,
+      "peakWorkingSetMiB": 47.859375,
+      "privateMiB": 58.25390625,
+      "workingSetMiB": 47.66015625
+    },
+    "averageCpuOneCorePercent": 0.13392455426590583,
+    "before": {
+      "cpuSeconds": 0.265625,
+      "peakWorkingSetMiB": 47.44140625,
+      "privateMiB": 58.24609375,
+      "workingSetMiB": 47.44140625
+    },
+    "dpi": 96,
+    "firstFrameMs": 222.818,
+    "frames": 25,
+    "framesPerSecond": 0.35713214470908217,
+    "heightDip": 240,
+    "logicalProcessors": 16,
+    "mode": "live",
+    "seconds": 70.0020997,
+    "serviceProcesses": {
+      "activeProcesses": 2,
+      "cpuSeconds": 0.5625,
+      "privateMiB": 24.23046875,
+      "totalProcesses": 2,
+      "workingSetMiB": 53.52734375
+    },
+    "softwareRenderer": false
+  },
+  "updated10Seconds": {
+    "after": {
+      "cpuSeconds": 0.546875,
+      "peakWorkingSetMiB": 48.16796875,
+      "privateMiB": 58.24609375,
+      "workingSetMiB": 47.90625
+    },
+    "averageCpuOneCorePercent": 0.40179241503521873,
+    "before": {
+      "cpuSeconds": 0.265625,
+      "peakWorkingSetMiB": 47.68359375,
+      "privateMiB": 58.3515625,
+      "workingSetMiB": 47.68359375
+    },
+    "dpi": 96,
+    "firstFrameMs": 255.4847,
+    "frames": 103,
+    "framesPerSecond": 1.4714531110623121,
+    "heightDip": 240,
+    "logicalProcessors": 16,
+    "mode": "live",
+    "seconds": 69.9988326,
+    "serviceProcesses": {
+      "activeProcesses": 2,
+      "averageCpuOneCorePercent": 1.1515411190304419,
+      "cpuSeconds": 0.96875,
+      "lastReadMs": 641.3878,
+      "notificationCount": 0,
+      "observedSeconds": 70.5576194,
+      "pollCount": 8,
+      "privateMiB": 25.80078125,
+      "totalProcesses": 2,
+      "workingSetMiB": 55.4140625
+    },
+    "softwareRenderer": false
+  }
+}
