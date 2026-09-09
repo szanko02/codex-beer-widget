@@ -78,6 +78,8 @@ struct App {
     beer::Json benchmark_before;
     std::chrono::steady_clock::time_point startup = std::chrono::steady_clock::now(), benchmark_start{};
     double first_frame_ms = -1;
+    HANDLE animation_waitable{};
+    bool software_renderer = false;
     HWND window{}, overlay{};
     HWND settings_window{};
     std::unique_ptr<beer::Renderer> renderer;
@@ -124,7 +126,7 @@ struct App {
             {"seconds", seconds},
             {"heightDip", height},
             {"dpi", GetDpiForWindow(window)},
-            {"softwareRenderer", renderer->software()},
+            {"softwareRenderer", software_renderer},
             {"firstFrameMs", first_frame_ms},
             {"frames", frame_count - benchmark_frames},
             {"framesPerSecond", (frame_count - benchmark_frames) / seconds},
@@ -149,9 +151,18 @@ struct App {
         const int interval = animated ? (settings.performance == 2 ? 17 : 34) : 0;
         if (interval != animation_interval) {
             KillTimer(window, AnimationTimer);
+            if (animation_waitable)
+                CancelWaitableTimer(animation_waitable);
             animation_interval = interval;
-            if (interval)
-                SetTimer(window, AnimationTimer, interval, nullptr);
+            if (interval) {
+                if (animation_waitable) {
+                    LARGE_INTEGER due{};
+                    due.QuadPart = -static_cast<LONGLONG>(interval) * 10000;
+                    if (!SetWaitableTimer(animation_waitable, &due, interval, nullptr, nullptr, FALSE))
+                        SetTimer(window, AnimationTimer, interval, nullptr);
+                } else
+                    SetTimer(window, AnimationTimer, interval, nullptr);
+            }
         }
     }
     void lifecycle() {
@@ -160,6 +171,8 @@ struct App {
         schedule();
         if (active())
             paint();
+        else
+            renderer.reset();
     }
     void update_view() {
         const auto *group = state.select_group(settings.group);
@@ -389,8 +402,12 @@ struct App {
             DeleteObject(result);
     }
     void paint() {
-        if (!renderer || !active())
+        if (!active())
             return;
+        if (!renderer) {
+            renderer = std::make_unique<beer::Renderer>(window);
+            software_renderer = renderer->software();
+        }
         std::wstring label =
             theme.show_percent
                 ? (current_remaining >= 0
@@ -409,9 +426,19 @@ struct App {
             drawing.decoration
                 ? std::chrono::duration<double>(std::chrono::steady_clock::now() - phase_start).count()
                 : 0;
-        renderer->draw(drawing,
-                       current_remaining >= 0 ? transition.value(std::chrono::steady_clock::now()) : -1,
-                       other_remaining, label, caption, phase, clicks ? overlay : nullptr);
+        const auto render = [&] {
+            renderer->draw(drawing,
+                           current_remaining >= 0 ? transition.value(std::chrono::steady_clock::now()) : -1,
+                           other_remaining, label, caption, phase, clicks ? overlay : nullptr);
+        };
+        try {
+            render();
+        } catch (const std::exception &) {
+            renderer.reset();
+            renderer = std::make_unique<beer::Renderer>(window);
+            software_renderer = renderer->software();
+            render();
+        }
         ++frame_count;
         if (first_frame_ms < 0)
             first_frame_ms =
@@ -535,11 +562,16 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
         case WM_CONTEXTMENU:
             app->menu();
             return 0;
-        case WM_LBUTTONUP:
-            app->settings.window_index = app->settings.window_index ? 0 : 1;
-            app->update_view();
-            app->save();
+        case WM_LBUTTONUP: {
+            RECT rc{};
+            GetClientRect(window, &rc);
+            if (GET_Y_LPARAM(l) >= rc.bottom * 240 / 300) {
+                app->settings.window_index = app->settings.window_index ? 0 : 1;
+                app->update_view();
+                app->save();
+            }
             return 0;
+        }
         case WM_NCMOUSEMOVE:
         case WM_MOUSEMOVE: {
             TRACKMOUSEEVENT tracking{
@@ -646,6 +678,8 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
         case WM_DESTROY:
             app->quitting = true;
             KillTimer(window, AnimationTimer);
+            if (app->animation_waitable)
+                CancelWaitableTimer(app->animation_waitable);
             KillTimer(window, BenchmarkTimer);
             app->worker.reset();
             app->save();
@@ -696,6 +730,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                                         ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&controls);
     App app;
+    app.animation_waitable =
+        CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
     std::string settings_error;
     app.settings = beer::load_settings(settings_error);
     app.demo = std::wstring(arguments).find(L"--demo") != std::wstring::npos;
@@ -746,6 +782,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                   240, nullptr, nullptr, instance, nullptr);
     try {
         app.renderer = std::make_unique<beer::Renderer>(window);
+        app.software_renderer = app.renderer->software();
         app.tray();
         if (!app.register_hotkey(app.settings.hotkey_modifiers, app.settings.hotkey))
             MessageBoxW(window,
@@ -783,11 +820,26 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         if (!settings_error.empty())
             MessageBoxW(window, L"Не удалось прочитать настройки. Использованы значения по умолчанию.",
                         L"Codex Beer Widget", MB_ICONWARNING);
-        MSG message{};
-        while (GetMessageW(&message, nullptr, 0, 0) > 0) {
-            if (!app.settings_window || !IsDialogMessageW(app.settings_window, &message)) {
-                TranslateMessage(&message);
-                DispatchMessageW(&message);
+        while (!app.quitting) {
+            const DWORD count = app.animation_waitable ? 1 : 0;
+            const DWORD result = MsgWaitForMultipleObjectsEx(count, count ? &app.animation_waitable : nullptr,
+                                                             INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
+            if (result == WAIT_FAILED)
+                throw std::runtime_error("Window wait failed");
+            if (count && result == WAIT_OBJECT_0) {
+                app.paint();
+                app.schedule();
+            }
+            MSG message{};
+            while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+                if (message.message == WM_QUIT) {
+                    app.quitting = true;
+                    break;
+                }
+                if (!app.settings_window || !IsDialogMessageW(app.settings_window, &message)) {
+                    TranslateMessage(&message);
+                    DispatchMessageW(&message);
+                }
             }
         }
     } catch (const std::exception &) {
@@ -800,6 +852,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         DestroyWindow(window);
     if (singleton)
         CloseHandle(singleton);
+    if (app.animation_waitable)
+        CloseHandle(app.animation_waitable);
     CoUninitialize();
     return 0;
 }

@@ -42,7 +42,7 @@ Settings settings_from_json(const Json &j) {
     s.click_through = boolean(j, "clickThrough", false);
     s.snap = boolean(j, "snap", true);
     s.autorun = boolean(j, "autorun", false);
-    s.hotkey = number<unsigned>(j, "hotkey", 'B', '0', 'Z');
+    s.hotkey = number<unsigned>(j, "hotkey", 'B', 1, 254);
     s.hotkey_modifiers = number<unsigned>(j, "hotkeyModifiers", MOD_CONTROL | MOD_ALT, 0, 7);
     if (!(s.hotkey_modifiers & (MOD_CONTROL | MOD_ALT)))
         s.hotkey_modifiers = MOD_CONTROL | MOD_ALT;
