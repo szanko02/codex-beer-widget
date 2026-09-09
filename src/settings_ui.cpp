@@ -229,7 +229,14 @@ void SettingsWindow::status(const std::wstring &text,
                             const std::vector<std::pair<std::string, std::wstring>> &groups) {
     if (!window_)
         return;
-    SetDlgItemTextW(window_, Status, text.c_str());
+    std::wstring multiline;
+    multiline.reserve(text.size() + 16);
+    for (const auto character : text) {
+        if (character == L'\n')
+            multiline += L'\r';
+        multiline += character;
+    }
+    SetDlgItemTextW(window_, Status, multiline.c_str());
     auto available = groups;
     if (!settings_.group.empty() && std::none_of(available.begin(), available.end(), [&](const auto &entry) {
             return entry.first == settings_.group;
