@@ -7,5 +7,6 @@ struct Theme {
     int bubbles = 12;
     float transition_seconds = .8f, text_size = 18;
     bool show_percent = true, decoration = true, ring = false;
+    float fill_left = 47, fill_top = 46, fill_right = 167, fill_bottom = 220;
 };
-}
+} // namespace beer
