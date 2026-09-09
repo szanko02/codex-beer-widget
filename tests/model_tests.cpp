@@ -1,4 +1,5 @@
 #include "limit_model.hpp"
+#include "settings.hpp"
 #include <iostream>
 #include <stdexcept>
 using namespace beer;
@@ -39,6 +40,11 @@ int main() {
         require(level.value(std::chrono::steady_clock::now()) == 50 && !level.active(), "initial value without fake reset");
         level.set(20, .8);
         require(level.active() && level.value(std::chrono::steady_clock::now() + std::chrono::seconds(2)) == 20, "transition reaches target");
+        Settings settings;settings.height=400;settings.x=-1800;settings.click_through=true;settings.theme.liquid_color=0x123456;
+        auto restored=settings_from_json(settings_to_json(settings));
+        require(restored.height==400&&restored.x==-1800&&restored.click_through&&restored.theme.liquid_color==0x123456,"settings roundtrip");
+        restored=settings_from_json({{"height",9999},{"theme",{{"glassAlpha",-8},{"bubbles",200}}}});
+        require(restored.height==400&&restored.theme.glass_alpha==0&&restored.theme.bubbles==24,"settings range validation");
         std::cout << "Quota parsing, states, groups, resets and transition tests passed\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
