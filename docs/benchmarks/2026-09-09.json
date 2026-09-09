@@ -1,0 +1,173 @@
+{
+  "date": "2026-09-09",
+  "source": "c7308ac plus high-resolution timer and hidden graphics release",
+  "hardware": "Ryzen 7 7735HS; 16 logical CPUs; Radeon integrated graphics; Windows 11 10.0.26200",
+  "reports": [
+    {
+      "after": {
+        "cpuSeconds": 0.25,
+        "peakWorkingSetMiB": 38.16015625,
+        "privateMiB": 8.89453125,
+        "workingSetMiB": 22.21484375
+      },
+      "averageCpuOneCorePercent": 0.0,
+      "before": {
+        "cpuSeconds": 0.25,
+        "peakWorkingSetMiB": 38.16015625,
+        "privateMiB": 18.89453125,
+        "workingSetMiB": 23.09375
+      },
+      "dpi": 96,
+      "firstFrameMs": -1.0,
+      "frames": 0,
+      "framesPerSecond": 0.0,
+      "heightDip": 240,
+      "logicalProcessors": 16,
+      "mode": "hidden",
+      "seconds": 29.9998112,
+      "serviceProcesses": {
+        "activeProcesses": 0
+      },
+      "softwareRenderer": false
+    },
+    {
+      "after": {
+        "cpuSeconds": 0.234375,
+        "peakWorkingSetMiB": 47.87109375,
+        "privateMiB": 58.39453125,
+        "workingSetMiB": 47.5703125
+      },
+      "averageCpuOneCorePercent": 0.05208837774546213,
+      "before": {
+        "cpuSeconds": 0.21875,
+        "peakWorkingSetMiB": 47.87109375,
+        "privateMiB": 58.43359375,
+        "workingSetMiB": 47.87109375
+      },
+      "dpi": 96,
+      "firstFrameMs": 219.7495,
+      "frames": 0,
+      "framesPerSecond": 0.0,
+      "heightDip": 240,
+      "logicalProcessors": 16,
+      "mode": "static",
+      "seconds": 29.9970947,
+      "serviceProcesses": {
+        "activeProcesses": 0
+      },
+      "softwareRenderer": false
+    },
+    {
+      "after": {
+        "cpuSeconds": 1.40625,
+        "peakWorkingSetMiB": 47.65625,
+        "privateMiB": 57.69140625,
+        "workingSetMiB": 47.5234375
+      },
+      "averageCpuOneCorePercent": 3.7491126974978832,
+      "before": {
+        "cpuSeconds": 0.28125,
+        "peakWorkingSetMiB": 47.63671875,
+        "privateMiB": 57.96484375,
+        "workingSetMiB": 47.63671875
+      },
+      "dpi": 96,
+      "firstFrameMs": 215.3366,
+      "frames": 875,
+      "framesPerSecond": 29.159765424983537,
+      "heightDip": 240,
+      "logicalProcessors": 16,
+      "mode": "normal",
+      "seconds": 30.0071001,
+      "serviceProcesses": {
+        "activeProcesses": 0
+      },
+      "softwareRenderer": false
+    },
+    {
+      "after": {
+        "cpuSeconds": 2.21875,
+        "peakWorkingSetMiB": 47.59375,
+        "privateMiB": 56.34375,
+        "workingSetMiB": 47.5
+      },
+      "averageCpuOneCorePercent": 6.510438433232495,
+      "before": {
+        "cpuSeconds": 0.265625,
+        "peakWorkingSetMiB": 47.59375,
+        "privateMiB": 56.6171875,
+        "workingSetMiB": 47.59375
+      },
+      "dpi": 96,
+      "firstFrameMs": 194.3129,
+      "frames": 1733,
+      "framesPerSecond": 57.7668598005346,
+      "heightDip": 240,
+      "logicalProcessors": 16,
+      "mode": "smooth",
+      "seconds": 29.9998997,
+      "serviceProcesses": {
+        "activeProcesses": 0
+      },
+      "softwareRenderer": false
+    },
+    {
+      "after": {
+        "cpuSeconds": 3.078125,
+        "peakWorkingSetMiB": 48.46484375,
+        "privateMiB": 58.84765625,
+        "workingSetMiB": 48.328125
+      },
+      "averageCpuOneCorePercent": 8.804406434667163,
+      "before": {
+        "cpuSeconds": 0.4375,
+        "peakWorkingSetMiB": 48.45703125,
+        "privateMiB": 59.12109375,
+        "workingSetMiB": 48.45703125
+      },
+      "dpi": 96,
+      "firstFrameMs": 209.9776,
+      "frames": 874,
+      "framesPerSecond": 29.14102238636346,
+      "heightDip": 240,
+      "logicalProcessors": 16,
+      "mode": "clickthrough",
+      "seconds": 29.9920843,
+      "serviceProcesses": {
+        "activeProcesses": 0
+      },
+      "softwareRenderer": false
+    },
+    {
+      "after": {
+        "cpuSeconds": 0.265625,
+        "peakWorkingSetMiB": 47.60546875,
+        "privateMiB": 56.77734375,
+        "workingSetMiB": 47.3046875
+      },
+      "averageCpuOneCorePercent": 0.15627460908360774,
+      "before": {
+        "cpuSeconds": 0.21875,
+        "peakWorkingSetMiB": 47.31640625,
+        "privateMiB": 56.6640625,
+        "workingSetMiB": 47.2578125
+      },
+      "dpi": 96,
+      "firstFrameMs": 211.9612,
+      "frames": 1,
+      "framesPerSecond": 0.033338583271169654,
+      "heightDip": 240,
+      "logicalProcessors": 16,
+      "mode": "live",
+      "seconds": 29.9952758,
+      "serviceProcesses": {
+        "activeProcesses": 2,
+        "cpuSeconds": 0.21875,
+        "privateMiB": 20.30859375,
+        "totalProcesses": 2,
+        "workingSetMiB": 49.83984375
+      },
+      "softwareRenderer": false
+    }
+  ]
+}
