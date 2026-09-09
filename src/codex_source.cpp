@@ -24,7 +24,7 @@ std::wstring codex_path() {
     if (n && n < 32768) return value;
     throw std::runtime_error("Codex not found. Install Codex CLI or set CODEX_WIDGET_CODEX_PATH to codex.exe.");
 }
-CodexSource::CodexSource(const std::wstring& executable) {
+CodexSource::CodexSource(const std::wstring& executable,const std::atomic_bool* caller_stop) {
     HANDLE child_in{}, child_out{}, child_err{};
     LPPROC_THREAD_ATTRIBUTE_LIST attributes{};
     PROCESS_INFORMATION pi{};
@@ -61,7 +61,7 @@ CodexSource::CodexSource(const std::wstring& executable) {
         DeleteProcThreadAttributeList(attributes); HeapFree(GetProcessHeap(), 0, attributes); attributes = nullptr;
         release(child_in); release(child_out); release(child_err);
         std::atomic_bool stop{false};
-        request("initialize", {{"clientInfo", {{"name", "codex_beer_widget"}, {"title", "Codex Beer Widget"}, {"version", "0.1.0"}}}}, stop);
+        request("initialize", {{"clientInfo", {{"name", "codex_beer_widget"}, {"title", "Codex Beer Widget"}, {"version", "0.1.0"}}}}, caller_stop?*caller_stop:stop);
         send({{"method", "initialized"}});
     } catch (...) {
         if (pi.hThread) { if (process_) TerminateProcess(process_, 1); release(pi.hThread); }

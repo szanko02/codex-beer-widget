@@ -11,7 +11,7 @@ using Json = nlohmann::json;
 std::wstring codex_path();
 class CodexSource {
 public:
-    explicit CodexSource(const std::wstring& executable);
+    explicit CodexSource(const std::wstring& executable,const std::atomic_bool* stop=nullptr);
     ~CodexSource();
     CodexSource(const CodexSource&) = delete;
     CodexSource& operator=(const CodexSource&) = delete;

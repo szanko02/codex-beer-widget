@@ -1,8 +1,12 @@
 #include "renderer.hpp"
 #include "settings.hpp"
+#include "worker.hpp"
 #include <windowsx.h>
 #include <commctrl.h>
 #include <shellapi.h>
+#include <wtsapi32.h>
+#include <iomanip>
+#include <sstream>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -12,12 +16,27 @@ constexpr wchar_t window_class[]=L"CodexBeerWidget.Window";
 enum Command { ToggleTop=101,ToggleLock,ToggleClicks,Quit,ToggleShow,OpenSettings,Restore,Refresh,
     SizeSlider=201,HotkeyControl,ApplySettings,AutorunControl,SnapControl };
 constexpr UINT TrayMessage=WM_APP+1,RestoreMessage=WM_APP+7;
+constexpr UINT AnimationTimer=10;
 LRESULT CALLBACK settings_proc(HWND,UINT,WPARAM,LPARAM);
 std::string utf8(const std::wstring& s){if(s.empty())return {};int n=WideCharToMultiByte(CP_UTF8,0,s.data(),static_cast<int>(s.size()),nullptr,0,nullptr,nullptr);std::string r(n,0);WideCharToMultiByte(CP_UTF8,0,s.data(),static_cast<int>(s.size()),r.data(),n,nullptr,nullptr);return r;}
+std::wstring wide(const std::string& s){if(s.empty())return {};int n=MultiByteToWideChar(CP_UTF8,0,s.data(),static_cast<int>(s.size()),nullptr,0);std::wstring r(n,0);MultiByteToWideChar(CP_UTF8,0,s.data(),static_cast<int>(s.size()),r.data(),n);return r;}
+std::wstring duration(const beer::QuotaWindow& w){if(!w.minutes)return L"окно без длительности";auto n=*w.minutes;if(n%1440==0)return std::to_wstring(n/1440)+L" дн.";if(n%60==0)return std::to_wstring(n/60)+L" ч";return std::to_wstring(n)+L" мин";}
+std::wstring timestamp(int64_t value){time_t raw=value;tm local{};if(localtime_s(&local,&raw))return L"неизвестно";wchar_t text[80]{};wcsftime(text,80,L"%d.%m %H:%M",&local);return text;}
 struct App {
     HWND window{},overlay{};
     HWND settings_window{};
     std::unique_ptr<beer::Renderer> renderer;
+    std::unique_ptr<beer::QuotaWorker> worker;
+    beer::QuotaState state;
+    beer::LevelTransition transition;
+    std::optional<beer::QuotaWindow> previous_window;
+    std::string previous_group;
+    bool demo=false,suspended=false,session_locked=false,display_off=false;
+    int animation_interval=0;
+    double current_remaining=-1,other_remaining=-1;
+    HWND tooltip{};std::wstring tooltip_text;
+    HPOWERNOTIFY power_notify{};
+    std::chrono::steady_clock::time_point phase_start=std::chrono::steady_clock::now();
     beer::Settings settings;
     beer::Theme& theme=settings.theme;
     bool& top=settings.top;bool& locked=settings.locked;bool& clicks=settings.click_through;
@@ -25,6 +44,40 @@ struct App {
     int hotkey_id=1;
     bool hotkey_ok=false,quitting=false;
     UINT taskbar_created=RegisterWindowMessageW(L"TaskbarCreated");
+    bool active()const{return settings.visible&&!suspended&&!session_locked&&!display_off;}
+    void schedule(){
+        const bool animated=active()&&((current_remaining>=0&&transition.active())||(current_remaining>0&&theme.decoration&&settings.performance>0&&(theme.bubbles>0||theme.waves>0)));
+        const int interval=animated?(settings.performance==2?17:34):0;
+        if(interval!=animation_interval){KillTimer(window,AnimationTimer);animation_interval=interval;if(interval)SetTimer(window,AnimationTimer,interval,nullptr);}
+    }
+    void lifecycle(){if(worker)worker->set_visible(active());schedule();if(active())paint();}
+    void update_view(){
+        const auto* group=state.select_group(settings.group);
+        const beer::QuotaWindow* selected=nullptr;other_remaining=-1;
+        if(group&&!group->windows.empty()){
+            const size_t index=std::min(static_cast<size_t>(settings.window_index),group->windows.size()-1);
+            selected=&group->windows[index];
+            if(group->windows.size()>1)other_remaining=group->windows[index==0?1:0].remaining.value_or(-1);
+        }
+        const double next=selected?selected->remaining.value_or(-1):-1;
+        const bool changed=!selected||!previous_window||selected->slot!=previous_window->slot||!group||group->id!=previous_group;
+        if(next>=0&&(next!=current_remaining||changed)){
+            const bool reset=!changed&&previous_window&&beer::confirmed_reset(*previous_window,*selected);
+            transition.set(next,reset?std::min(1.2f,theme.transition_seconds):theme.transition_seconds,changed||current_remaining<0);
+        }
+        current_remaining=next;
+        if(selected){previous_window=*selected;previous_group=group->id;}else{previous_window.reset();previous_group.clear();}
+        tooltip_text=demo?L"Демонстрационные данные\n":L"Лимиты Codex\n";
+        if(group)for(const auto& quota:group->windows){tooltip_text+=duration(quota)+L": "+(quota.remaining?std::to_wstring(static_cast<int>(std::lround(*quota.remaining)))+L"% осталось":L"нет данных");
+            tooltip_text+=L"\nСброс: "+(quota.resets_at?timestamp(*quota.resets_at):L"неизвестно")+L"\n";}
+        if(state.updated.time_since_epoch().count())tooltip_text+=L"Обновлено: "+timestamp(std::chrono::system_clock::to_time_t(state.updated))+L"\n";
+        if(state.stale)tooltip_text+=L"Устарело: "+wide(state.error);
+        if(tooltip){TOOLINFOW info{sizeof(info)};info.hwnd=window;info.uId=1;info.lpszText=tooltip_text.data();SendMessageW(tooltip,TTM_UPDATETIPTEXTW,0,reinterpret_cast<LPARAM>(&info));}
+        schedule();paint();
+    }
+    void tip(bool visible){if(!tooltip)return;TOOLINFOW info{sizeof(info)};info.hwnd=window;info.uId=1;
+        if(visible){POINT p{};GetCursorPos(&p);SendMessageW(tooltip,TTM_TRACKPOSITION,0,MAKELPARAM(p.x+14,p.y+18));}
+        SendMessageW(tooltip,TTM_TRACKACTIVATE,visible,reinterpret_cast<LPARAM>(&info));}
     void save(){try{RECT rc{};GetWindowRect(window,&rc);settings.x=rc.left;settings.y=rc.top;
         MONITORINFOEXW monitor{};monitor.cbSize=sizeof(monitor);GetMonitorInfoW(MonitorFromWindow(window,MONITOR_DEFAULTTONEAREST),&monitor);
         settings.monitor=utf8(monitor.szDevice);beer::save_settings(settings);
@@ -37,7 +90,7 @@ struct App {
         if(!remove){icon.uVersion=NOTIFYICON_VERSION_4;Shell_NotifyIconW(NIM_SETVERSION,&icon);}
     }
     void show(bool visible){settings.visible=visible;ShowWindow(window,visible&&!clicks?SW_SHOWNOACTIVATE:SW_HIDE);
-        if(visible&&clicks)paint();ShowWindow(overlay,visible&&clicks?SW_SHOWNOACTIVATE:SW_HIDE);if(visible)paint();save();}
+        if(visible&&clicks)paint();ShowWindow(overlay,visible&&clicks?SW_SHOWNOACTIVATE:SW_HIDE);if(visible)paint();else tip(false);lifecycle();save();}
     void recover(bool primary=false){
         RECT rc{};GetWindowRect(window,&rc);HMONITOR monitor=primary?MonitorFromPoint(POINT{0,0},MONITOR_DEFAULTTOPRIMARY):MonitorFromRect(&rc,MONITOR_DEFAULTTONEAREST);
         MONITORINFO info{sizeof(info)};GetMonitorInfoW(monitor,&info);
@@ -74,7 +127,15 @@ struct App {
         if(!SetWindowRgn(window,result,TRUE)) DeleteObject(result);
     }
     void paint() {
-        if(renderer&&settings.visible) renderer->draw(theme,50,67,L"Демо · 50%",L"Тест окна",0,clicks?overlay:nullptr);
+        if(!renderer||!active())return;
+        std::wstring label=theme.show_percent?(current_remaining>=0?std::to_wstring(static_cast<int>(std::lround(current_remaining)))+L"%":L"нет данных"):L"Codex";
+        if(demo)label=L"Демо · "+label;
+        std::wstring caption=state.stale?L"устарело":previous_window?duration(*previous_window)+L" · остаток":L"ожидание данных";
+        auto drawing=theme;
+        // Economy freezes decorative positions even during a level transition.
+        drawing.decoration=theme.decoration&&settings.performance>0;
+        const double phase=drawing.decoration?std::chrono::duration<double>(std::chrono::steady_clock::now()-phase_start).count():0;
+        renderer->draw(drawing,current_remaining>=0?transition.value(std::chrono::steady_clock::now()):-1,other_remaining,label,caption,phase,clicks?overlay:nullptr);
     }
     void size(int value) {
         height=std::clamp(value,80,400);
@@ -91,6 +152,7 @@ struct App {
         HMENU menu=CreatePopupMenu();
         AppendMenuW(menu,MF_STRING,ToggleShow,settings.visible?L"Скрыть":L"Показать");
         AppendMenuW(menu,MF_STRING,OpenSettings,L"Настройки…");
+        AppendMenuW(menu,MF_STRING,Refresh,L"Обновить лимиты");
         AppendMenuW(menu,MF_STRING|(top?MF_CHECKED:0),ToggleTop,L"Поверх остальных окон");
         AppendMenuW(menu,MF_STRING|(locked?MF_CHECKED:0),ToggleLock,L"Зафиксировать положение");
         AppendMenuW(menu,MF_STRING|(clicks?MF_CHECKED:0),ToggleClicks,L"Пропускать клики");
@@ -100,6 +162,7 @@ struct App {
         const int command=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_RIGHTBUTTON,pt.x,pt.y,0,window,nullptr);DestroyMenu(menu);
         if(command==ToggleTop){top=!top;size(height);} if(command==ToggleLock)locked=!locked;
         if(command==ToggleShow)show(!settings.visible);if(command==OpenSettings)open_settings();if(command==Restore)recover(true);
+        if(command==Refresh&&worker)worker->refresh();
         if(command==ToggleClicks)click_mode();if(command==Quit)DestroyWindow(window);
         if(command!=Quit)save();
         PostMessageW(window,WM_NULL,0,0);
@@ -123,6 +186,17 @@ LRESULT CALLBACK procedure(HWND window,UINT message,WPARAM w,LPARAM l) {
         case WM_PAINT:{PAINTSTRUCT ps{};BeginPaint(window,&ps);EndPaint(window,&ps);app->paint();return 0;}
         case WM_ERASEBKGND:return 1;
         case WM_CONTEXTMENU:app->menu();return 0;
+        case WM_LBUTTONUP:app->settings.window_index=app->settings.window_index?0:1;app->update_view();app->save();return 0;
+        case WM_NCMOUSEMOVE:case WM_MOUSEMOVE:{TRACKMOUSEEVENT tracking{sizeof(tracking),static_cast<DWORD>(TME_LEAVE|(message==WM_NCMOUSEMOVE?TME_NONCLIENT:0)),window,0};TrackMouseEvent(&tracking);app->tip(true);break;}
+        case WM_NCMOUSELEAVE:case WM_MOUSELEAVE:app->tip(false);return 0;
+        case beer::DataMessage:if(app->worker){if(auto state=app->worker->take()){app->state=std::move(*state);app->update_view();}}return 0;
+        case WM_TIMER:if(w==AnimationTimer){app->paint();app->schedule();}return 0;
+        case WM_WTSSESSION_CHANGE:if(w==WTS_SESSION_LOCK)app->session_locked=true;if(w==WTS_SESSION_UNLOCK)app->session_locked=false;app->lifecycle();return 0;
+        case WM_POWERBROADCAST:
+            if(w==PBT_APMSUSPEND)app->suspended=true;
+            if(w==PBT_APMRESUMEAUTOMATIC||w==PBT_APMRESUMESUSPEND){app->suspended=false;if(app->worker)app->worker->refresh();}
+            if(w==PBT_POWERSETTINGCHANGE){const auto* setting=reinterpret_cast<POWERBROADCAST_SETTING*>(l);if(IsEqualGUID(setting->PowerSetting,GUID_CONSOLE_DISPLAY_STATE)&&setting->DataLength==sizeof(DWORD)){DWORD value{};memcpy(&value,setting->Data,sizeof(value));app->display_off=value==0;}}
+            app->lifecycle();return TRUE;
         case WM_HOTKEY:app->show(!app->settings.visible);return 0;
         case TrayMessage:if(LOWORD(l)==WM_CONTEXTMENU)app->menu();else if(LOWORD(l)==NIN_SELECT||LOWORD(l)==NIN_KEYSELECT)app->show(!app->settings.visible);return 0;
         case RestoreMessage:app->recover(true);return 0;
@@ -136,7 +210,8 @@ LRESULT CALLBACK procedure(HWND window,UINT message,WPARAM w,LPARAM l) {
             return TRUE;
         case WM_DISPLAYCHANGE:app->recover();return 0;
         case WM_CLOSE:DestroyWindow(window);return 0;
-        case WM_DESTROY:app->quitting=true;app->save();app->tray(true);if(app->settings_window)DestroyWindow(app->settings_window);UnregisterHotKey(window,app->hotkey_id);PostQuitMessage(0);return 0;
+        case WM_DESTROY:app->quitting=true;KillTimer(window,AnimationTimer);app->worker.reset();app->save();app->tray(true);if(app->tooltip)DestroyWindow(app->tooltip);if(app->settings_window)DestroyWindow(app->settings_window);
+            WTSUnRegisterSessionNotification(window);if(app->power_notify)UnregisterPowerSettingNotification(app->power_notify);UnregisterHotKey(window,app->hotkey_id);PostQuitMessage(0);return 0;
         }
     }catch(const std::exception&){MessageBoxW(window,L"Не удалось создать или обновить графику Direct2D.",L"Codex Beer Widget",MB_ICONERROR);DestroyWindow(window);return 0;}
     return DefWindowProcW(window,message,w,l);
@@ -183,6 +258,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR arguments,int) {
     INITCOMMONCONTROLSEX controls{sizeof(controls),ICC_BAR_CLASSES|ICC_HOTKEY_CLASS};InitCommonControlsEx(&controls);
     App app;
     std::string settings_error;app.settings=beer::load_settings(settings_error);
+    app.demo=std::wstring(arguments).find(L"--demo")!=std::wstring::npos;
     WNDCLASSEXW wc{sizeof(wc)};wc.hInstance=instance;wc.lpszClassName=window_class;wc.lpfnWndProc=procedure;wc.hCursor=LoadCursorW(nullptr,IDC_ARROW);
     RegisterClassExW(&wc);
     WNDCLASSEXW sc=wc;sc.lpszClassName=L"CodexBeerWidget.Settings";sc.lpfnWndProc=settings_proc;sc.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);RegisterClassExW(&sc);
@@ -194,6 +270,10 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR arguments,int) {
         app.renderer=std::make_unique<beer::Renderer>(window);
         app.tray();if(!app.register_hotkey(app.settings.hotkey_modifiers,app.settings.hotkey))MessageBoxW(window,L"Сохранённая горячая клавиша занята. Выберите другую в настройках через трей.",L"Codex Beer Widget",MB_ICONWARNING);
         app.size(app.height);app.recover();app.show(app.settings.visible);
+        app.tooltip=CreateWindowExW(WS_EX_TOPMOST|WS_EX_NOACTIVATE,TOOLTIPS_CLASSW,nullptr,WS_POPUP|TTS_ALWAYSTIP|TTS_NOPREFIX,0,0,0,0,window,nullptr,instance,nullptr);
+        TOOLINFOW info{sizeof(info)};info.uFlags=TTF_TRACK|TTF_ABSOLUTE;info.hwnd=window;info.uId=1;info.lpszText=const_cast<LPWSTR>(L"Ожидание данных");SendMessageW(app.tooltip,TTM_ADDTOOLW,0,reinterpret_cast<LPARAM>(&info));SendMessageW(app.tooltip,TTM_SETMAXTIPWIDTH,0,420);
+        WTSRegisterSessionNotification(window,NOTIFY_FOR_THIS_SESSION);app.power_notify=RegisterPowerSettingNotification(window,&GUID_CONSOLE_DISPLAY_STATE,DEVICE_NOTIFY_WINDOW_HANDLE);
+        app.worker=std::make_unique<beer::QuotaWorker>(window,app.demo,app.active());
         if(std::wstring(arguments).find(L"--settings")!=std::wstring::npos)app.open_settings();
         if(!settings_error.empty())MessageBoxW(window,L"Не удалось прочитать настройки. Использованы значения по умолчанию.",L"Codex Beer Widget",MB_ICONWARNING);
         MSG message{};while(GetMessageW(&message,nullptr,0,0)>0){if(!app.settings_window||!IsDialogMessageW(app.settings_window,&message)){TranslateMessage(&message);DispatchMessageW(&message);}}
