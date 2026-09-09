@@ -16,3 +16,10 @@ it does not validate the normal mode's no-activation behavior.
 Initial static sample: working set 51.57 MiB, private commit 56.27 MiB (hardware-dependent).
 The 50 MiB working-set target is not yet met. There is no continuous animation timer at this checkpoint.
 Multi-monitor DPI transitions, physical click-through and focus preservation still require dedicated checks.
+
+Stage 5 UI checks: dragging by the mug changed its desktop position. The settings slider reached
+400 DIP and persisted it; Ctrl+Alt+B hid and restored the widget while keyboard focus stayed in settings.
+The lower 80 DIP slider bound was exercised too. Recovery remains accessible through the tray and relaunch.
+An initial settings visibility issue under a hidden Windows startup hint was fixed explicitly.
+The earlier 54.94-second resource sample included dragging and UI inspection, so its 0.825% CPU
+must not be reported as a static-idle benchmark.
