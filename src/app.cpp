@@ -187,7 +187,7 @@ LRESULT CALLBACK procedure(HWND window,UINT message,WPARAM w,LPARAM l) {
         case WM_ERASEBKGND:return 1;
         case WM_CONTEXTMENU:app->menu();return 0;
         case WM_LBUTTONUP:app->settings.window_index=app->settings.window_index?0:1;app->update_view();app->save();return 0;
-        case WM_NCMOUSEMOVE:case WM_MOUSEMOVE:{TRACKMOUSEEVENT tracking{sizeof(tracking),TME_LEAVE|(message==WM_NCMOUSEMOVE?TME_NONCLIENT:0),window,0};TrackMouseEvent(&tracking);app->tip(true);break;}
+        case WM_NCMOUSEMOVE:case WM_MOUSEMOVE:{TRACKMOUSEEVENT tracking{sizeof(tracking),static_cast<DWORD>(TME_LEAVE|(message==WM_NCMOUSEMOVE?TME_NONCLIENT:0)),window,0};TrackMouseEvent(&tracking);app->tip(true);break;}
         case WM_NCMOUSELEAVE:case WM_MOUSELEAVE:app->tip(false);return 0;
         case beer::DataMessage:if(app->worker){if(auto state=app->worker->take()){app->state=std::move(*state);app->update_view();}}return 0;
         case WM_TIMER:if(w==AnimationTimer){app->paint();app->schedule();}return 0;
