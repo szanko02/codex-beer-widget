@@ -229,10 +229,22 @@ void SettingsWindow::status(const std::wstring &text,
                             const std::vector<std::pair<std::string, std::wstring>> &groups) {
     if (!window_)
         return;
-    SetDlgItemTextW(window_, Status, text.c_str());
-    if (groups == groups_ && SendDlgItemMessageW(window_, Group, CB_GETCOUNT, 0, 0) > 0)
+    std::wstring multiline;
+    multiline.reserve(text.size() + 16);
+    for (const auto character : text) {
+        if (character == L'\n')
+            multiline += L'\r';
+        multiline += character;
+    }
+    SetDlgItemTextW(window_, Status, multiline.c_str());
+    auto available = groups;
+    if (!settings_.group.empty() && std::none_of(available.begin(), available.end(), [&](const auto &entry) {
+            return entry.first == settings_.group;
+        }))
+        available.emplace_back(settings_.group, to_wide(settings_.group) + L" (нет данных)");
+    if (available == groups_ && SendDlgItemMessageW(window_, Group, CB_GETCOUNT, 0, 0) > 0)
         return;
-    groups_ = groups;
+    groups_ = std::move(available);
     SendDlgItemMessageW(window_, Group, CB_RESETCONTENT, 0, 0);
     SendDlgItemMessageW(window_, Group, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Автоматически"));
     int selected = 0;

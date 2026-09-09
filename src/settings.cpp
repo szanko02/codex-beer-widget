@@ -47,6 +47,11 @@ Settings settings_from_json(const Json &j) {
     if (!(s.hotkey_modifiers & (MOD_CONTROL | MOD_ALT)))
         s.hotkey_modifiers = MOD_CONTROL | MOD_ALT;
     s.monitor = string(j, "monitor");
+    if (j.contains("monitorOffsetX") && j["monitorOffsetX"].is_number() && j.contains("monitorOffsetY") &&
+        j["monitorOffsetY"].is_number()) {
+        s.monitor_offset_x = number(j, "monitorOffsetX", 0, -100000, 100000);
+        s.monitor_offset_y = number(j, "monitorOffsetY", 0, -100000, 100000);
+    }
     s.group = string(j, "group");
     const auto t = j.value("theme", Json::object());
     if (t.is_object()) {
@@ -95,6 +100,8 @@ Json settings_to_json(const Settings &s) {
             {"hotkey", s.hotkey},
             {"hotkeyModifiers", s.hotkey_modifiers},
             {"monitor", s.monitor},
+            {"monitorOffsetX", s.monitor_offset_x ? Json(*s.monitor_offset_x) : Json(nullptr)},
+            {"monitorOffsetY", s.monitor_offset_y ? Json(*s.monitor_offset_y) : Json(nullptr)},
             {"group", s.group},
             {"windowIndex", s.window_index},
             {"theme",

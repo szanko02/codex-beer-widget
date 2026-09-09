@@ -79,6 +79,10 @@ struct App {
     std::chrono::steady_clock::time_point startup = std::chrono::steady_clock::now(), benchmark_start{};
     double first_frame_ms = -1;
     HANDLE animation_waitable{};
+    ~App() {
+        if (animation_waitable)
+            CloseHandle(animation_waitable);
+    }
     bool software_renderer = false;
     HWND window{}, overlay{};
     HWND settings_window{};
@@ -213,11 +217,12 @@ struct App {
                 tooltip_text +=
                     L"\nСброс: " + (quota.resets_at ? timestamp(*quota.resets_at) : L"неизвестно") + L"\n";
             }
-        if (state.updated.time_since_epoch().count())
-            tooltip_text +=
-                L"Обновлено: " + timestamp(std::chrono::system_clock::to_time_t(state.updated)) + L"\n";
-        if (state.stale)
-            tooltip_text += L"Устарело: " + wide(state.error);
+        const auto updated = group ? group->updated : state.updated;
+        if (updated.time_since_epoch().count())
+            tooltip_text += L"Обновлено: " + timestamp(std::chrono::system_clock::to_time_t(updated)) + L"\n";
+        if (group ? group->stale : state.stale)
+            tooltip_text += (updated.time_since_epoch().count() ? L"Устарело: " : L"Ожидание данных: ") +
+                            wide(group ? group->error : state.error);
         if (tooltip) {
             TOOLINFOW info{sizeof(info)};
             info.hwnd = window;
@@ -259,6 +264,8 @@ struct App {
             monitor.cbSize = sizeof(monitor);
             GetMonitorInfoW(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &monitor);
             settings.monitor = utf8(monitor.szDevice);
+            settings.monitor_offset_x = rc.left - monitor.rcWork.left;
+            settings.monitor_offset_y = rc.top - monitor.rcWork.top;
             beer::save_settings(settings);
         } catch (const std::exception &) {
             MessageBoxW(settings_window ? settings_window : window, L"Не удалось сохранить настройки.",
@@ -393,8 +400,13 @@ struct App {
             CombineRgn(handle, handle, hole, RGN_DIFF);
             CombineRgn(result, result, handle, RGN_OR);
         }
-        HRGN label = round(26, 240, 214, 300, 25);
+        HRGN label = round(27, 241, 213, 275, 34);
         CombineRgn(result, result, label, RGN_OR);
+        HRGN bar = round(41, 280, 199, 284, 4), caption = round(27, 285, 213, 300, 14);
+        CombineRgn(result, result, bar, RGN_OR);
+        CombineRgn(result, result, caption, RGN_OR);
+        DeleteObject(bar);
+        DeleteObject(caption);
         DeleteObject(handle);
         DeleteObject(hole);
         DeleteObject(label);
@@ -409,14 +421,15 @@ struct App {
             software_renderer = renderer->software();
         }
         std::wstring label =
-            theme.show_percent
-                ? (current_remaining >= 0
+            current_remaining < 0
+                ? L"нет данных"
+                : (theme.show_percent
                        ? std::to_wstring(static_cast<int>(std::lround(current_remaining))) + L"%"
-                       : L"нет данных")
-                : L"Codex";
+                       : L"Codex");
         if (demo)
             label = L"Демо · " + label;
-        std::wstring caption = state.stale       ? L"устарело"
+        const auto *group = state.select_group(settings.group);
+        std::wstring caption = (group ? group->stale : state.stale) && previous_window ? L"устарело"
                                : previous_window ? duration(*previous_window) + L" · остаток"
                                                  : L"ожидание данных";
         auto drawing = theme;
@@ -768,6 +781,37 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     wc.lpfnWndProc = procedure;
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wc);
+    if (!app.settings.monitor.empty()) {
+        struct Placement {
+            std::wstring name;
+            MONITORINFOEXW info{};
+            bool found = false;
+        } placement;
+        placement.name = wide(app.settings.monitor);
+        EnumDisplayMonitors(
+            nullptr, nullptr,
+            [](HMONITOR monitor, HDC, LPRECT, LPARAM data) -> BOOL {
+                auto &p = *reinterpret_cast<Placement *>(data);
+                MONITORINFOEXW info{};
+                info.cbSize = sizeof(info);
+                if (GetMonitorInfoW(monitor, &info) && p.name == info.szDevice) {
+                    p.info = info;
+                    p.found = true;
+                    return FALSE;
+                }
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&placement));
+        if (placement.found && app.settings.monitor_offset_x && app.settings.monitor_offset_y) {
+            app.settings.x = placement.info.rcWork.left + *app.settings.monitor_offset_x;
+            app.settings.y = placement.info.rcWork.top + *app.settings.monitor_offset_y;
+        } else if (!placement.found) {
+            MONITORINFO info{sizeof(info)};
+            GetMonitorInfoW(MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY), &info);
+            app.settings.x = info.rcWork.right - 250;
+            app.settings.y = info.rcWork.bottom - 350;
+        }
+    }
     const bool inspect = std::wstring(arguments).find(L"--inspect") != std::wstring::npos;
     HWND window = CreateWindowExW((inspect ? WS_EX_APPWINDOW : (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE)) |
                                       WS_EX_NOREDIRECTIONBITMAP,
@@ -852,8 +896,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         DestroyWindow(window);
     if (singleton)
         CloseHandle(singleton);
-    if (app.animation_waitable)
-        CloseHandle(app.animation_waitable);
     CoUninitialize();
     return 0;
 }

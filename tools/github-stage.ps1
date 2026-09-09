@@ -32,6 +32,7 @@ switch ($Action) {
         $pr = Invoke-RestMethod -Uri "$api/pulls/$Number" -Headers $headers
         if ($pr.base.ref -ne 'develop' -or $pr.head.ref -notlike 'codex/*') { throw 'Unexpected branch pair' }
         $checks = Invoke-RestMethod -Uri "$api/commits/$($pr.head.sha)/check-runs" -Headers $headers
+        if (!@($checks.check_runs | Where-Object { $_.name -eq 'build' }).Count) { throw 'Required build check not found' }
         $bad = @($checks.check_runs | Where-Object { $_.status -ne 'completed' -or $_.conclusion -notin @('success','skipped','neutral') })
         if ($bad.Count) { throw 'Checks pending or failed' }
         $body = @{ merge_method = 'merge'; sha = $pr.head.sha } | ConvertTo-Json

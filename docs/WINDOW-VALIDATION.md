@@ -23,3 +23,11 @@ The lower 80 DIP slider bound was exercised too. Recovery remains accessible thr
 An initial settings visibility issue under a hidden Windows startup hint was fixed explicitly.
 The earlier 54.94-second resource sample included dragging and UI inspection, so its 0.825% CPU
 must not be reported as a static-idle benchmark.
+
+Stage 8: after graphics-resource release was added, Ctrl+Alt+B removed the inspected widget from
+the visible-window list and a second press restored it; the ring rendered correctly with current data.
+Preset loading was exercised by selecting the saved preset from the list and applying it.
+Restoring the standard theme switched back to the mug. These checks used `--inspect`.
+The final window region separately includes the two caption capsules and secondary bar;
+gaps between them are excluded. Saved monitor-relative offsets support changed monitor origins,
+with primary-monitor fallback when the saved device is absent; physical topology changes remain untested.

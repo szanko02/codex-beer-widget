@@ -1,0 +1,14 @@
+Codex Beer Widget 0.1.0 - private preview for Windows x64
+
+This application is an independent project and is not an official OpenAI product.
+Codex CLI is required separately; it is not included in this distribution.
+The application uses the account already signed in through Codex.
+
+Third-party code included in the executable:
+nlohmann/json 3.12.0, copyright Niels Lohmann and contributors, MIT license.
+The full license is included in licenses/nlohmann-json-MIT.txt.
+
+Windows system libraries are supplied by Windows. The Microsoft C++ runtime
+is linked statically with the Visual Studio build tools.
+
+This preview is unsigned. See docs/RELEASE-CHECKLIST.md for tested and pending scenarios.

@@ -15,6 +15,9 @@ struct QuotaWindow {
 struct QuotaGroup {
     std::string id, name;
     std::vector<QuotaWindow> windows;
+    std::chrono::system_clock::time_point updated{};
+    bool stale = false;
+    std::string error;
 };
 inline std::optional<int64_t> integer_field(const Json &j, const char *key) {
     if (!j.contains(key) || !j[key].is_number_integer())
@@ -83,18 +86,27 @@ struct QuotaState {
     std::string error;
     void accept(const Json &response, bool partial = false) {
         auto fresh = parse_groups(response);
+        const auto now = std::chrono::system_clock::now();
+        for (auto &[id, group] : fresh)
+            group.updated = now;
         if (partial)
             for (auto &[id, group] : fresh)
                 groups[id] = std::move(group);
         else
             groups = std::move(fresh);
-        updated = std::chrono::system_clock::now();
-        stale = false;
-        error.clear();
+        if (!partial)
+            updated = now;
+        stale = std::any_of(groups.begin(), groups.end(), [](const auto &item) { return item.second.stale; });
+        if (!stale)
+            error.clear();
     }
     void fail(std::string message) {
         stale = true;
         error = std::move(message);
+        for (auto &[id, group] : groups) {
+            group.stale = true;
+            group.error = error;
+        }
     }
     const QuotaGroup *select_group(const std::string &preferred) const {
         if (auto it = groups.find(preferred); it != groups.end())

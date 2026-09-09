@@ -32,7 +32,9 @@ int main() {
         s.fail("offline");
         require(s.stale && s.updated == timestamp && s.groups.size() == 2, "retain last known on error");
         s.accept({{"rateLimits", {{"limitId", "other"}, {"primary", {{"usedPercent", 20}}}}}}, true);
-        require(s.groups.size() == 2 && !s.stale, "partial notification preserves other groups");
+        require(s.groups.size() == 2 && s.stale && !s.groups.at("other").stale &&
+                    s.groups.at("codex").stale && s.groups.at("codex").updated == timestamp,
+                "partial notification must not refresh stale unrelated groups");
         auto old = parse_window({{"usedPercent", 60}, {"resetsAt", 100}}, "primary");
         auto fresh = parse_window({{"usedPercent", 0}, {"resetsAt", 200}}, "primary");
         require(confirmed_reset(old, fresh), "confirmed reset");
@@ -54,11 +56,15 @@ int main() {
         Settings settings;
         settings.height = 400;
         settings.x = -1800;
+        settings.hotkey = VK_F8;
+        settings.monitor_offset_x = 40;
+        settings.monitor_offset_y = 70;
         settings.click_through = true;
         settings.theme.liquid_color = 0x123456;
         auto restored = settings_from_json(settings_to_json(settings));
-        require(restored.height == 400 && restored.x == -1800 && restored.click_through &&
-                    restored.theme.liquid_color == 0x123456,
+        require(restored.height == 400 && restored.x == -1800 && restored.hotkey == VK_F8 &&
+                    restored.click_through && restored.theme.liquid_color == 0x123456 &&
+                    restored.monitor_offset_x == 40 && restored.monitor_offset_y == 70,
                 "settings roundtrip");
         restored = settings_from_json({{"height", 9999}, {"theme", {{"glassAlpha", -8}, {"bubbles", 200}}}});
         require(restored.height == 400 && restored.theme.glass_alpha == 0 && restored.theme.bubbles == 24,
