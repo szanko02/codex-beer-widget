@@ -22,6 +22,8 @@ switch ($Action) {
         if (!$Title -or !$BodyFile) { throw 'Title and BodyFile required' }
         $branch = git branch --show-current
         if ($branch -notlike 'codex/*') { throw 'Expected stage branch' }
+        $existing = @(Invoke-RestMethod -Uri "$api/pulls?state=open&base=develop" -Headers $headers | ForEach-Object { $_ } | Where-Object { $_.head.ref -eq $branch })
+        if ($existing.Count) { $existing | Select-Object number,html_url; break }
         $body = @{ title = $Title; body = Get-Content -Raw -LiteralPath $BodyFile; head = $branch; base = 'develop' } | ConvertTo-Json
         Invoke-RestMethod -Method Post -Uri "$api/pulls" -Headers $headers -Body $body -ContentType 'application/json' | Select-Object number,html_url
     }

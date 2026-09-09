@@ -112,14 +112,18 @@ Json CodexSource::request(const std::string& method, const Json& params, const s
     send({{"id", id}, {"method", method}, {"params", params}});
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(25);
     while (!stop && std::chrono::steady_clock::now() < deadline) {
+        Json result;
+        bool found = false;
         for (const auto& m : receive()) {
             if (m.contains("id") && m["id"] == id) {
                 if (m.contains("error")) throw std::runtime_error("Codex rejected request; check sign-in and connection");
                 check(m.contains("result"), "Missing RPC result");
-                return m["result"];
+                result = m["result"];
+                found = true;
             }
             if (on_notification && m.contains("method")) on_notification(m);
         }
+        if (found) return result;
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
     throw std::runtime_error(stop ? "Stopped" : "Codex request timed out");

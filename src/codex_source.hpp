@@ -4,6 +4,7 @@
 #include <atomic>
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace beer {
 using Json = nlohmann::json;
