@@ -79,6 +79,13 @@ int main() {
         require(retry_seconds(1, true) == 5 && retry_seconds(2, true) == 10 &&
                     retry_seconds(9, true) == 900 && retry_seconds(1, false) == 300,
                 "bounded retry schedule");
+        const auto start = std::chrono::steady_clock::time_point{};
+        require(next_poll(start, start + std::chrono::seconds(2), true) == start + std::chrono::seconds(10),
+                "normal response latency does not extend ten-second cadence");
+        require(next_poll(start, start + std::chrono::seconds(25), true) == start + std::chrono::seconds(35),
+                "slow responses must not cause catch-up request bursts");
+        require(next_poll(start, start + std::chrono::seconds(2), false) == start + std::chrono::seconds(300),
+                "hidden widget retains economical polling");
         std::cout << "Quota parsing, states, groups, resets and transition tests passed\n";
         return 0;
     } catch (const std::exception &e) {

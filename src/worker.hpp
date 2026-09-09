@@ -5,6 +5,16 @@
 #include <thread>
 namespace beer {
 constexpr UINT DataMessage = WM_APP + 2;
+constexpr int poll_seconds(bool visible) {
+    return visible ? 10 : 300;
+}
+inline std::chrono::steady_clock::time_point next_poll(std::chrono::steady_clock::time_point started,
+                                                       std::chrono::steady_clock::time_point finished,
+                                                       bool visible) {
+    const auto interval = std::chrono::seconds(poll_seconds(visible));
+    const auto scheduled = started + interval;
+    return scheduled > finished ? scheduled : finished + interval;
+}
 inline int retry_seconds(int failures, bool visible) {
     return std::min(900, std::max(visible ? 5 : 300, 5 * (1 << std::clamp(failures - 1, 0, 8))));
 }
