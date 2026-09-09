@@ -1,0 +1,28 @@
+name: Windows build
+on:
+  push:
+    branches: [main, develop, 'codex/**']
+  pull_request:
+    branches: [main, develop]
+permissions:
+  contents: read
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: cmake --preset windows-x64
+      - run: cmake --build --preset release
+      - run: ctest --preset release --no-tests=error
+      - run: ./tools/package.ps1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-x64
+          path: |
+            dist/*.zip
+            dist/CodexBeerWidget.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
