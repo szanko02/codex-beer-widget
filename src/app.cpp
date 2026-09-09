@@ -1,9 +1,11 @@
+#include "diagnostics.hpp"
 #include "renderer.hpp"
 #include "settings.hpp"
 #include "settings_ui.hpp"
 #include "worker.hpp"
 #include <algorithm>
 #include <commctrl.h>
+#include <fstream>
 #include <iomanip>
 #include <memory>
 #include <shellapi.h>
@@ -31,6 +33,7 @@ enum Command {
 };
 constexpr UINT TrayMessage = WM_APP + 1, RestoreMessage = WM_APP + 7;
 constexpr UINT AnimationTimer = 10;
+constexpr UINT BenchmarkTimer = 20;
 std::string utf8(const std::wstring &s) {
     if (s.empty())
         return {};
@@ -68,6 +71,13 @@ std::wstring timestamp(int64_t value) {
     return text;
 }
 struct App {
+    std::string benchmark;
+    int benchmark_seconds = 30;
+    uint64_t frame_count = 0, benchmark_frames = 0;
+    bool benchmark_measuring = false;
+    beer::Json benchmark_before;
+    std::chrono::steady_clock::time_point startup = std::chrono::steady_clock::now(), benchmark_start{};
+    double first_frame_ms = -1;
     HWND window{}, overlay{};
     HWND settings_window{};
     std::unique_ptr<beer::Renderer> renderer;
@@ -94,6 +104,43 @@ struct App {
     bool hotkey_ok = false, quitting = false;
     UINT taskbar_created = RegisterWindowMessageW(L"TaskbarCreated");
     bool active() const { return settings.visible && !suspended && !session_locked && !display_off; }
+    void benchmark_tick() {
+        if (!benchmark_measuring) {
+            benchmark_measuring = true;
+            benchmark_before = beer::process_resources();
+            benchmark_frames = frame_count;
+            benchmark_start = std::chrono::steady_clock::now();
+            SetTimer(window, BenchmarkTimer, benchmark_seconds * 1000, nullptr);
+            return;
+        }
+        KillTimer(window, BenchmarkTimer);
+        const double seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - benchmark_start).count();
+        auto after = beer::process_resources();
+        SYSTEM_INFO system{};
+        GetSystemInfo(&system);
+        beer::Json report = {
+            {"mode", benchmark},
+            {"seconds", seconds},
+            {"heightDip", height},
+            {"dpi", GetDpiForWindow(window)},
+            {"softwareRenderer", renderer->software()},
+            {"firstFrameMs", first_frame_ms},
+            {"frames", frame_count - benchmark_frames},
+            {"framesPerSecond", (frame_count - benchmark_frames) / seconds},
+            {"before", benchmark_before},
+            {"after", after},
+            {"logicalProcessors", system.dwNumberOfProcessors},
+            {"averageCpuOneCorePercent",
+             100 * (after["cpuSeconds"].get<double>() - benchmark_before["cpuSeconds"].get<double>()) /
+                 seconds},
+            {"serviceProcesses", worker ? worker->resources() : beer::Json{{"activeProcesses", 0}}}};
+        std::filesystem::create_directories(".local");
+        std::ofstream output(std::filesystem::path(".local") / ("benchmark-" + benchmark + ".json"));
+        output << report.dump(2);
+        output.close();
+        DestroyWindow(window);
+    }
     void schedule() {
         const bool animated =
             active() && ((current_remaining >= 0 && transition.active()) ||
@@ -188,6 +235,8 @@ struct App {
         SendMessageW(tooltip, TTM_TRACKACTIVATE, visible, reinterpret_cast<LPARAM>(&info));
     }
     void save() {
+        if (!benchmark.empty())
+            return;
         try {
             RECT rc{};
             GetWindowRect(window, &rc);
@@ -363,6 +412,10 @@ struct App {
         renderer->draw(drawing,
                        current_remaining >= 0 ? transition.value(std::chrono::steady_clock::now()) : -1,
                        other_remaining, label, caption, phase, clicks ? overlay : nullptr);
+        ++frame_count;
+        if (first_frame_ms < 0)
+            first_frame_ms =
+                std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - startup).count();
     }
     void size(int value) {
         height = std::clamp(value, 80, 400);
@@ -509,6 +562,10 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
             }
             return 0;
         case WM_TIMER:
+            if (w == BenchmarkTimer) {
+                app->benchmark_tick();
+                return 0;
+            }
             if (w == AnimationTimer) {
                 app->paint();
                 app->schedule();
@@ -589,6 +646,7 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
         case WM_DESTROY:
             app->quitting = true;
             KillTimer(window, AnimationTimer);
+            KillTimer(window, BenchmarkTimer);
             app->worker.reset();
             app->save();
             app->tray(true);
@@ -641,6 +699,33 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     std::string settings_error;
     app.settings = beer::load_settings(settings_error);
     app.demo = std::wstring(arguments).find(L"--demo") != std::wstring::npos;
+    const std::wstring command_line = arguments;
+    if (auto position = command_line.find(L"--benchmark="); position != std::wstring::npos) {
+        const auto start = position + 12, end = command_line.find(L' ', start);
+        app.benchmark = utf8(command_line.substr(start, end - start));
+        const std::vector<std::string> modes = {"hidden", "static",       "normal",
+                                                "smooth", "clickthrough", "live"};
+        if (std::find(modes.begin(), modes.end(), app.benchmark) == modes.end()) {
+            CloseHandle(singleton);
+            CoUninitialize();
+            return 2;
+        }
+        app.settings = beer::Settings{};
+        app.demo = app.benchmark != "live";
+        settings_error.clear();
+        app.settings.visible = app.benchmark != "hidden";
+        app.settings.performance =
+            app.benchmark == "smooth"
+                ? 2
+                : (app.benchmark == "normal" || app.benchmark == "clickthrough" ? 1 : 0);
+        app.settings.click_through = app.benchmark == "clickthrough";
+        if (auto at = command_line.find(L"--seconds="); at != std::wstring::npos) {
+            try {
+                app.benchmark_seconds = std::clamp(std::stoi(command_line.substr(at + 10)), 2, 600);
+            } catch (...) {
+            }
+        }
+    }
     WNDCLASSEXW wc{sizeof(wc)};
     wc.hInstance = instance;
     wc.lpszClassName = window_class;
@@ -682,7 +767,17 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         WTSRegisterSessionNotification(window, NOTIFY_FOR_THIS_SESSION);
         app.power_notify = RegisterPowerSettingNotification(window, &GUID_CONSOLE_DISPLAY_STATE,
                                                             DEVICE_NOTIFY_WINDOW_HANDLE);
-        app.worker = std::make_unique<beer::QuotaWorker>(window, app.demo, app.active());
+        if (app.benchmark.empty() || app.benchmark == "live")
+            app.worker = std::make_unique<beer::QuotaWorker>(window, app.demo, app.active());
+        else {
+            app.state.accept({{"rateLimits",
+                               {{"limitId", "codex"},
+                                {"primary", {{"usedPercent", 30}, {"windowDurationMins", 300}}},
+                                {"secondary", {{"usedPercent", 45}, {"windowDurationMins", 10080}}}}}});
+            app.update_view();
+        }
+        if (!app.benchmark.empty())
+            SetTimer(window, BenchmarkTimer, 2000, nullptr);
         if (std::wstring(arguments).find(L"--settings") != std::wstring::npos)
             app.open_settings();
         if (!settings_error.empty())
