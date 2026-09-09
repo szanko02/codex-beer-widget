@@ -1,0 +1,9 @@
+/build/
+/out/
+/.local/
+/dist/
+.vs/
+*.user
+*.pdb
+auth.json
+*.log
