@@ -1,5 +1,6 @@
 #include "limit_model.hpp"
 #include "settings.hpp"
+#include "worker.hpp"
 #include <iostream>
 #include <stdexcept>
 using namespace beer;
@@ -45,6 +46,7 @@ int main() {
         require(restored.height==400&&restored.x==-1800&&restored.click_through&&restored.theme.liquid_color==0x123456,"settings roundtrip");
         restored=settings_from_json({{"height",9999},{"theme",{{"glassAlpha",-8},{"bubbles",200}}}});
         require(restored.height==400&&restored.theme.glass_alpha==0&&restored.theme.bubbles==24,"settings range validation");
+        require(retry_seconds(1,true)==5&&retry_seconds(2,true)==10&&retry_seconds(9,true)==900&&retry_seconds(1,false)==300,"bounded retry schedule");
         std::cout << "Quota parsing, states, groups, resets and transition tests passed\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
