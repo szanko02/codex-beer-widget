@@ -307,6 +307,8 @@ struct App {
         }
         panel->open();
         settings_window = panel->window();
+        SetWindowPos(settings_window, top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         update_view();
     }
     void region() {
@@ -370,6 +372,9 @@ struct App {
         RECT rc{};
         GetWindowRect(window, &rc);
         SetWindowPos(overlay, top ? HWND_TOPMOST : HWND_NOTOPMOST, rc.left, rc.top, w, h, SWP_NOACTIVATE);
+        if (settings_window && IsWindowVisible(settings_window))
+            SetWindowPos(settings_window, top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
+                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         region();
         paint();
     }

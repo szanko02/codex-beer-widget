@@ -63,6 +63,13 @@ int main() {
         restored = settings_from_json({{"height", 9999}, {"theme", {{"glassAlpha", -8}, {"bubbles", 200}}}});
         require(restored.height == 400 && restored.theme.glass_alpha == 0 && restored.theme.bubbles == 24,
                 "settings range validation");
+        restored = settings_from_json(
+            {{"theme",
+              {{"resources", {{"geometry", "ring"}}},
+               {"fillArea", {{"left", 999}, {"right", -3}, {"top", 999}, {"bottom", -1}}}}}});
+        require(restored.theme.ring && restored.theme.fill_right > restored.theme.fill_left &&
+                    restored.theme.fill_bottom > restored.theme.fill_top,
+                "theme geometry validation");
         require(retry_seconds(1, true) == 5 && retry_seconds(2, true) == 10 &&
                     retry_seconds(9, true) == 900 && retry_seconds(1, false) == 300,
                 "bounded retry schedule");
