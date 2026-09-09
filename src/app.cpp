@@ -58,7 +58,10 @@ struct App {
         if(settings_window){ShowWindow(settings_window,SW_SHOWNORMAL);SetForegroundWindow(settings_window);return;}
         settings_window=CreateWindowExW(0,L"CodexBeerWidget.Settings",L"Настройки Codex Beer Widget",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,
             CW_USEDEFAULT,CW_USEDEFAULT,480,320,nullptr,nullptr,GetModuleHandleW(nullptr),this);
-        ShowWindow(settings_window,SW_SHOWNORMAL);SetForegroundWindow(settings_window);
+        if(!settings_window)throw std::runtime_error("Cannot create settings window");
+        ShowWindow(settings_window,SW_SHOWNORMAL);
+        SetWindowPos(settings_window,nullptr,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
+        SetForegroundWindow(settings_window);
     }
     void region() {
         RECT rc{}; GetClientRect(window,&rc);
