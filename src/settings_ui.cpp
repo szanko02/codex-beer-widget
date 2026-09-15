@@ -1,4 +1,5 @@
 #include "settings_ui.hpp"
+#include "icons.hpp"
 #include <algorithm>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -72,6 +73,8 @@ void SettingsWindow::open() {
         wc.lpszClassName = L"CodexBeerWidget.Preferences";
         wc.lpfnWndProc = procedure;
         wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+        wc.hIcon = app_icon();
+        wc.hIconSm = app_icon(true);
         wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
         RegisterClassExW(&wc);
         dpi_ = GetDpiForSystem();

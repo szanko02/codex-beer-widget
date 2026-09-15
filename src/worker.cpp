@@ -85,7 +85,7 @@ void QuotaWorker::run() {
                                           {"windowDurationMins", 10080},
                                           {"resetsAt", now + 604800}}}}}});
                     }
-                    due = Clock::now() + std::chrono::seconds(visible ? 4 : 300);
+                    due = Clock::now() + std::chrono::seconds(poll_seconds(visible, interval_));
                 } else {
                     const auto read_started = Clock::now();
                     if (!source) {
@@ -134,7 +134,7 @@ void QuotaWorker::run() {
                                                observed
                                          : 0;
                     }
-                    // Keep a ten-second cadence for normal replies; never burst to catch up after a slow one.
+                    // Keep the selected cadence; never burst to catch up after a slow reply.
                     due = next_poll(read_started, finished, visible, interval_);
                 }
                 failures = 0;
