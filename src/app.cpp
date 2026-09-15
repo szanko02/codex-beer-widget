@@ -1,4 +1,5 @@
 #include "diagnostics.hpp"
+#include "icons.hpp"
 #include "renderer.hpp"
 #include "settings.hpp"
 #include "settings_ui.hpp"
@@ -85,6 +86,7 @@ struct App {
             CloseHandle(animation_waitable);
     }
     bool software_renderer = false;
+    bool low_memory = true;
     HWND window{}, overlay{};
     HWND settings_window{};
     std::unique_ptr<beer::Renderer> renderer;
@@ -139,6 +141,8 @@ struct App {
             {"heightDip", height},
             {"dpi", GetDpiForWindow(window)},
             {"softwareRenderer", software_renderer},
+            {"lowMemoryRenderer", low_memory},
+            {"refreshSeconds", settings.refresh_seconds},
             {"firstFrameMs", first_frame_ms},
             {"frames", frame_count - benchmark_frames},
             {"tooltipUpdates", tip_updates},
@@ -335,7 +339,7 @@ struct App {
         icon.uID = 1;
         icon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
         icon.uCallbackMessage = TrayMessage;
-        icon.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+        icon.hIcon = beer::app_icon(true);
         wcscpy_s(icon.szTip, L"Codex Beer Widget — показать / скрыть");
         Shell_NotifyIconW(remove ? NIM_DELETE : NIM_ADD, &icon);
         if (!remove) {
@@ -476,7 +480,7 @@ struct App {
         if (!active())
             return;
         if (!renderer) {
-            renderer = std::make_unique<beer::Renderer>(window);
+            renderer = std::make_unique<beer::Renderer>(window, low_memory);
             software_renderer = renderer->software();
         }
         std::wstring label =
@@ -507,7 +511,7 @@ struct App {
             render();
         } catch (const std::exception &) {
             renderer.reset();
-            renderer = std::make_unique<beer::Renderer>(window);
+            renderer = std::make_unique<beer::Renderer>(window, low_memory);
             software_renderer = renderer->software();
             render();
         }
@@ -829,6 +833,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                                         ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&controls);
     App app;
+    app.low_memory = std::wstring(arguments).find(L"--gpu") == std::wstring::npos;
     app.animation_waitable =
         CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
     std::string settings_error;
@@ -855,6 +860,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                 ? 2
                 : (app.benchmark == "normal" || app.benchmark == "clickthrough" ? 1 : 0);
         app.settings.click_through = app.benchmark == "clickthrough";
+        if (auto at = command_line.find(L"--refresh="); at != std::wstring::npos) {
+            try {
+                app.settings.refresh_seconds = beer::valid_refresh(std::stoi(command_line.substr(at + 10)));
+            } catch (...) {
+            }
+        }
         if (auto at = command_line.find(L"--seconds="); at != std::wstring::npos) {
             try {
                 app.benchmark_seconds = std::clamp(std::stoi(command_line.substr(at + 10)), 2, 600);
@@ -867,6 +878,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     wc.lpszClassName = window_class;
     wc.lpfnWndProc = procedure;
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    wc.hIcon = beer::app_icon();
+    wc.hIconSm = beer::app_icon(true);
     RegisterClassExW(&wc);
     if (!app.settings.monitor.empty()) {
         struct Placement {
@@ -901,7 +914,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     }
     const bool inspect = std::wstring(arguments).find(L"--inspect") != std::wstring::npos;
     HWND window = CreateWindowExW((inspect ? WS_EX_APPWINDOW : (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE)) |
-                                      WS_EX_NOREDIRECTIONBITMAP,
+                                      (app.low_memory ? WS_EX_LAYERED : WS_EX_NOREDIRECTIONBITMAP),
                                   window_class, L"Codex Beer Widget", WS_POPUP, app.settings.x,
                                   app.settings.y, 192, 240, nullptr, nullptr, instance, &app);
     if (!window) {
@@ -912,8 +925,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                   L"STATIC", L"Codex Beer Widget — click through", WS_POPUP, 120, 120, 192,
                                   240, nullptr, nullptr, instance, nullptr);
     try {
-        app.renderer = std::make_unique<beer::Renderer>(window);
-        app.software_renderer = app.renderer->software();
         app.tray();
         if (!app.register_hotkey(app.settings.hotkey_modifiers, app.settings.hotkey))
             MessageBoxW(window,
@@ -923,8 +934,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         app.recover();
         app.show(app.settings.visible);
         app.tooltip = CreateWindowExW(WS_EX_TOPMOST | WS_EX_NOACTIVATE, TOOLTIPS_CLASSW, nullptr,
-                                      WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX, 0, 0, 0, 0, window, nullptr,
-                                      instance, nullptr);
+                                      WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX | TTS_NOANIMATE | TTS_NOFADE, 0,
+                                      0, 0, 0, window, nullptr, instance, nullptr);
         TOOLINFOW info{sizeof(info)};
         info.uFlags = TTF_TRACK | TTF_ABSOLUTE;
         info.hwnd = window;

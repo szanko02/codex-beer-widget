@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$Executable,[Parameter(Mandatory)][string]$Tag,
-      [int]$Seconds=20,[int]$Repeats=2,
+      [int]$Seconds=20,[int]$Repeats=2,[ValidateSet(2,5,10,30,60)][int]$RefreshSeconds=10,
       [string[]]$Modes=@('hidden','static','normal','clickthrough','hover-legacy','hover300','hover800','hover1200'))
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
@@ -13,7 +13,7 @@ for ($repeat=1;$repeat -le $Repeats;$repeat++) {
  foreach ($mode in $Modes) {
   if ($mode -notin @('hidden','static','normal','smooth','clickthrough','live','hover-legacy','hover300','hover800','hover1200')) { throw 'Unknown mode' }
   $started=Get-Date
-  $process=Start-Process -FilePath $executablePath -ArgumentList "--benchmark=$mode --seconds=$Seconds" -WorkingDirectory $root -WindowStyle Hidden -PassThru
+  $process=Start-Process -FilePath $executablePath -ArgumentList "--benchmark=$mode --seconds=$Seconds --refresh=$RefreshSeconds" -WorkingDirectory $root -WindowStyle Hidden -PassThru
   if (!$process.WaitForExit(($Seconds+40)*1000)) { Stop-Process -Id $process.Id; throw "Timeout: $mode" }
   $file=Join-Path $root ".local/benchmark-$mode.json"
   if ($process.ExitCode -ne 0 -or !(Test-Path -LiteralPath $file) -or (Get-Item -LiteralPath $file).LastWriteTime -lt $started) { throw "No successful new report: $mode" }
