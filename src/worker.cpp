@@ -1,8 +1,8 @@
 #include "worker.hpp"
 #include <memory>
 namespace beer {
-QuotaWorker::QuotaWorker(HWND window, bool demo, bool visible)
-    : window_(window), demo_(demo), visible_(visible) {
+QuotaWorker::QuotaWorker(HWND window, bool demo, bool visible, int interval)
+    : window_(window), demo_(demo), visible_(visible), interval_(valid_refresh(interval)) {
     thread_ = std::thread([this] { run(); });
 }
 QuotaWorker::~QuotaWorker() {
@@ -22,6 +22,10 @@ void QuotaWorker::set_visible(bool visible) {
 void QuotaWorker::refresh() {
     refresh_ = true;
     wake_.notify_all();
+}
+void QuotaWorker::set_interval(int seconds) {
+    if (interval_.exchange(valid_refresh(seconds)) != valid_refresh(seconds))
+        refresh();
 }
 std::optional<QuotaState> QuotaWorker::take() {
     std::lock_guard lock(mutex_);
@@ -131,7 +135,7 @@ void QuotaWorker::run() {
                                          : 0;
                     }
                     // Keep a ten-second cadence for normal replies; never burst to catch up after a slow one.
-                    due = next_poll(read_started, finished, visible);
+                    due = next_poll(read_started, finished, visible, interval_);
                 }
                 failures = 0;
                 publish(state);

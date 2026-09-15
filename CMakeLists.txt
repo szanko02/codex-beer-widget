@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(CodexBeerWidget VERSION 0.1.1 LANGUAGES CXX RC)
+project(CodexBeerWidget VERSION 0.1.2 LANGUAGES CXX RC)
 if(NOT WIN32 OR NOT MSVC)
   message(FATAL_ERROR "Windows with MSVC and Windows SDK is required")
 endif()

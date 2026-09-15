@@ -1,5 +1,6 @@
 #pragma once
 #include "codex_source.hpp"
+#include "interaction.hpp"
 #include "theme.hpp"
 #include <filesystem>
 
@@ -12,6 +13,7 @@ struct Settings {
     std::string monitor, group;
     std::optional<int> monitor_offset_x, monitor_offset_y;
     int window_index = 0;
+    int refresh_seconds = 10;
 };
 std::filesystem::path settings_directory();
 Settings settings_from_json(const Json &data);
