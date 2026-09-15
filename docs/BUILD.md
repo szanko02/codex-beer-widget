@@ -32,6 +32,16 @@ GitHub Actions builds, runs CTest and packages the same configuration on Windows
 Downloads are hash-pinned; a configured toolchain and network access for the initial dependency fetch are required.
 This is a repeatable source build, not a promise of bit-identical binaries across different toolchains.
 
+Icons are embedded in all four executable targets. Their editable generator is
+`tools/generate-icons.py` (Pillow); the checked-in ICO files are sufficient to compile the project.
+`tools/performance-infographic.py` renders the checked-in measurements using matplotlib.
+Neither Python nor these packages are runtime dependencies of the widget.
+
+The default renderer uses a cached premultiplied BGRA DIB with Direct2D and UpdateLayeredWindow.
+`--gpu` selects the retained Direct3D/DirectComposition renderer. Graphics DLLs are delay-loaded,
+so starting hidden does not initialize graphics. Segoe UI faces are loaded from Windows Fonts;
+if the local font collection cannot be created, DirectWrite falls back to its system collection.
+
 For a fresh build use `cmake -S . -B out/verify -G "Visual Studio 17 2022" -A x64`,
 `cmake --build out/verify --config Release`, `ctest --test-dir out/verify -C Release --output-on-failure`,
 then `./tools/package.ps1 -BuildDirectory out/verify -OutputDirectory dist/verify`.
