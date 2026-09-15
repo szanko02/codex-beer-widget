@@ -7,3 +7,4 @@
 *.pdb
 auth.json
 *.log
+__pycache__/

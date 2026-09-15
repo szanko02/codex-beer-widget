@@ -80,6 +80,26 @@ int main() {
                     retry_seconds(9, true) == 900 && retry_seconds(1, false) == 300,
                 "bounded retry schedule");
         const auto start = std::chrono::steady_clock::time_point{};
+        for (int seconds : refresh_choices) {
+            auto choice = settings_from_json({{"refreshSeconds", seconds}});
+            require(settings_from_json(settings_to_json(choice)).refresh_seconds == seconds,
+                    "interval roundtrip");
+            require(next_poll(start, start + std::chrono::milliseconds(200), true, seconds) ==
+                        start + std::chrono::seconds(seconds),
+                    "selected polling interval");
+        }
+        require(settings_from_json({{"refreshSeconds", 7}}).refresh_seconds == 10,
+                "invalid interval fallback");
+        HoverIntent hover;
+        require(hover.motion(0, 0, start), "arm first hover");
+        require(!hover.ready(start + std::chrono::milliseconds(799)), "no immediate tooltip");
+        require(!hover.motion(2, 1, start + std::chrono::milliseconds(400)), "ignore small pointer jitter");
+        require(hover.ready(start + std::chrono::milliseconds(800)), "show after dwell");
+        require(!hover.ready(start + std::chrono::seconds(2)), "do not repeatedly activate tooltip");
+        require(hover.motion(10, 0, start + std::chrono::seconds(2)) && !hover.visible,
+                "movement hides and rearms");
+        hover.leave();
+        require(!hover.ready(start + std::chrono::seconds(5)), "leave cancels pending tooltip");
         require(next_poll(start, start + std::chrono::seconds(2), true) == start + std::chrono::seconds(10),
                 "normal response latency does not extend ten-second cadence");
         require(next_poll(start, start + std::chrono::seconds(25), true) == start + std::chrono::seconds(35),

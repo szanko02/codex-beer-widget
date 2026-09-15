@@ -1,0 +1,2129 @@
+{
+  "date": "2026-09-15",
+  "machine": "Windows 11 10.0.26200 / Ryzen 7 7735HS / 16 logical CPUs",
+  "baselineSourceCommit": "145f8d3",
+  "optimizedSourceCommit": "9cde39c",
+  "before": {
+    "tag": "baseline-controlled",
+    "seconds": 20,
+    "version": "0.1.2",
+    "reports": [
+      {
+        "after": {
+          "cpuSeconds": 0.25,
+          "peakWorkingSetMiB": 38.08984375,
+          "privateMiB": 9.0546875,
+          "workingSetMiB": 22.3046875
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.25,
+          "peakWorkingSetMiB": 38.08984375,
+          "privateMiB": 19.19921875,
+          "workingSetMiB": 23.17578125
+        },
+        "dpi": 96,
+        "firstFrameMs": -1.0,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "hidden",
+        "seconds": 20.0018706,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.296875,
+          "peakWorkingSetMiB": 50.90625,
+          "privateMiB": 57.21875,
+          "workingSetMiB": 50.61328125
+        },
+        "averageCpuOneCorePercent": 0.0781197249655717,
+        "before": {
+          "cpuSeconds": 0.28125,
+          "peakWorkingSetMiB": 50.90625,
+          "privateMiB": 57.21875,
+          "workingSetMiB": 50.90625
+        },
+        "dpi": 96,
+        "firstFrameMs": 242.7507,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "static",
+        "seconds": 20.0013505,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.203125,
+          "peakWorkingSetMiB": 51.1875,
+          "privateMiB": 58.12890625,
+          "workingSetMiB": 51.046875
+        },
+        "averageCpuOneCorePercent": 4.299240227010889,
+        "before": {
+          "cpuSeconds": 0.34375,
+          "peakWorkingSetMiB": 51.15234375,
+          "privateMiB": 58.359375,
+          "workingSetMiB": 51.15234375
+        },
+        "dpi": 96,
+        "firstFrameMs": 244.5712,
+        "frames": 583,
+        "framesPerSecond": 29.166045700041877,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "normal",
+        "seconds": 19.988997,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 2.25,
+          "peakWorkingSetMiB": 51.8125,
+          "privateMiB": 59.0546875,
+          "workingSetMiB": 51.68359375
+        },
+        "averageCpuOneCorePercent": 9.29926886428739,
+        "before": {
+          "cpuSeconds": 0.390625,
+          "peakWorkingSetMiB": 51.7109375,
+          "privateMiB": 59.0859375,
+          "workingSetMiB": 51.7109375
+        },
+        "dpi": 96,
+        "firstFrameMs": 243.2314,
+        "frames": 583,
+        "framesPerSecond": 29.15750587094883,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "clickthrough",
+        "seconds": 19.9948515,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.265625,
+          "peakWorkingSetMiB": 38.11328125,
+          "privateMiB": 8.5546875,
+          "workingSetMiB": 22.2421875
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.265625,
+          "peakWorkingSetMiB": 38.11328125,
+          "privateMiB": 17.69921875,
+          "workingSetMiB": 23.11328125
+        },
+        "dpi": 96,
+        "firstFrameMs": -1.0,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "hidden",
+        "seconds": 20.0052333,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.265625,
+          "peakWorkingSetMiB": 50.98828125,
+          "privateMiB": 57.21875,
+          "workingSetMiB": 50.6953125
+        },
+        "averageCpuOneCorePercent": 0.07817571454041522,
+        "before": {
+          "cpuSeconds": 0.25,
+          "peakWorkingSetMiB": 50.98046875,
+          "privateMiB": 57.2109375,
+          "workingSetMiB": 50.98046875
+        },
+        "dpi": 96,
+        "firstFrameMs": 223.9874,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "static",
+        "seconds": 19.9870255,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.15625,
+          "peakWorkingSetMiB": 51.05078125,
+          "privateMiB": 58.40234375,
+          "workingSetMiB": 50.91015625
+        },
+        "averageCpuOneCorePercent": 3.982620157992884,
+        "before": {
+          "cpuSeconds": 0.359375,
+          "peakWorkingSetMiB": 51.03515625,
+          "privateMiB": 58.64453125,
+          "workingSetMiB": 51.03515625
+        },
+        "dpi": 96,
+        "firstFrameMs": 243.0431,
+        "frames": 583,
+        "framesPerSecond": 29.13716143824127,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "normal",
+        "seconds": 20.0088125,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 2.1875,
+          "peakWorkingSetMiB": 51.71875,
+          "privateMiB": 58.91796875,
+          "workingSetMiB": 51.640625
+        },
+        "averageCpuOneCorePercent": 8.827570054808504,
+        "before": {
+          "cpuSeconds": 0.421875,
+          "peakWorkingSetMiB": 51.7109375,
+          "privateMiB": 59.0546875,
+          "workingSetMiB": 51.7109375
+        },
+        "dpi": 96,
+        "firstFrameMs": 236.2102,
+        "frames": 583,
+        "framesPerSecond": 29.1481676004438,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "clickthrough",
+        "seconds": 20.0012573,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.953125,
+          "peakWorkingSetMiB": 47.69140625,
+          "privateMiB": 58.40234375,
+          "workingSetMiB": 47.55859375
+        },
+        "averageCpuOneCorePercent": 7.343211228592159,
+        "before": {
+          "cpuSeconds": 0.484375,
+          "peakWorkingSetMiB": 47.68359375,
+          "privateMiB": 58.6484375,
+          "workingSetMiB": 47.68359375
+        },
+        "dpi": 96,
+        "firstFrameMs": 244.5381,
+        "frames": 1164,
+        "framesPerSecond": 58.19573017927675,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "smooth",
+        "seconds": 20.0014674,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 2.03125,
+          "peakWorkingSetMiB": 47.75,
+          "privateMiB": 56.6953125,
+          "workingSetMiB": 47.6171875
+        },
+        "averageCpuOneCorePercent": 7.967614853911764,
+        "before": {
+          "cpuSeconds": 0.4375,
+          "peakWorkingSetMiB": 47.74609375,
+          "privateMiB": 56.94140625,
+          "workingSetMiB": 47.74609375
+        },
+        "dpi": 96,
+        "firstFrameMs": 222.8154,
+        "frames": 1165,
+        "framesPerSecond": 58.24170230467266,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "smooth",
+        "seconds": 20.0028494,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 4.0,
+          "peakWorkingSetMiB": 52.1015625,
+          "privateMiB": 59.078125,
+          "workingSetMiB": 51.80859375
+        },
+        "averageCpuOneCorePercent": 16.7191592850193,
+        "before": {
+          "cpuSeconds": 0.65625,
+          "peakWorkingSetMiB": 52.05859375,
+          "privateMiB": 59.05078125,
+          "workingSetMiB": 52.05859375
+        },
+        "dpi": 96,
+        "firstFrameMs": 236.6894,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 2075,
+        "logicalProcessors": 16,
+        "mode": "hover-legacy",
+        "seconds": 19.9995104,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 5,
+        "tooltipUpdates": 2075,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 4.09375,
+          "peakWorkingSetMiB": 51.93359375,
+          "privateMiB": 57.48828125,
+          "workingSetMiB": 51.640625
+        },
+        "averageCpuOneCorePercent": 17.898228614971355,
+        "before": {
+          "cpuSeconds": 0.515625,
+          "peakWorkingSetMiB": 51.89453125,
+          "privateMiB": 57.4609375,
+          "workingSetMiB": 51.89453125
+        },
+        "dpi": 96,
+        "firstFrameMs": 239.515,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 2089,
+        "logicalProcessors": 16,
+        "mode": "hover-legacy",
+        "seconds": 19.9915035,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 5,
+        "tooltipUpdates": 2089,
+        "repeat": 2
+      }
+    ]
+  },
+  "after": {
+    "reports": [
+      {
+        "after": {
+          "cpuSeconds": 0.015625,
+          "peakWorkingSetMiB": 12.7421875,
+          "privateMiB": 2.06640625,
+          "workingSetMiB": 12.73828125
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.015625,
+          "peakWorkingSetMiB": 12.7421875,
+          "privateMiB": 2.06640625,
+          "workingSetMiB": 12.73828125
+        },
+        "dpi": 96,
+        "firstFrameMs": -1.0,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "hidden",
+        "refreshSeconds": 10,
+        "seconds": 20.0001375,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.03125,
+          "peakWorkingSetMiB": 25.58203125,
+          "privateMiB": 12.4765625,
+          "workingSetMiB": 25.58203125
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.03125,
+          "peakWorkingSetMiB": 25.58203125,
+          "privateMiB": 12.4765625,
+          "workingSetMiB": 25.58203125
+        },
+        "dpi": 96,
+        "firstFrameMs": 41.205,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "static",
+        "refreshSeconds": 10,
+        "seconds": 19.9982798,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.21875,
+          "peakWorkingSetMiB": 26.79296875,
+          "privateMiB": 12.18359375,
+          "workingSetMiB": 26.71484375
+        },
+        "averageCpuOneCorePercent": 5.549610458491095,
+        "before": {
+          "cpuSeconds": 0.109375,
+          "peakWorkingSetMiB": 26.37109375,
+          "privateMiB": 12.2734375,
+          "workingSetMiB": 26.37109375
+        },
+        "dpi": 96,
+        "firstFrameMs": 37.2307,
+        "frames": 583,
+        "framesPerSecond": 29.164375412284468,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "normal",
+        "refreshSeconds": 10,
+        "seconds": 19.9901418,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 3.296875,
+          "peakWorkingSetMiB": 26.71875,
+          "privateMiB": 12.09375,
+          "workingSetMiB": 26.62109375
+        },
+        "averageCpuOneCorePercent": 14.765522970236276,
+        "before": {
+          "cpuSeconds": 0.34375,
+          "peakWorkingSetMiB": 26.3828125,
+          "privateMiB": 11.83984375,
+          "workingSetMiB": 26.37890625
+        },
+        "dpi": 96,
+        "firstFrameMs": 36.3915,
+        "frames": 1157,
+        "framesPerSecond": 57.84960025926221,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "smooth",
+        "refreshSeconds": 10,
+        "seconds": 20.0001382,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.765625,
+          "peakWorkingSetMiB": 26.8203125,
+          "privateMiB": 12.28515625,
+          "workingSetMiB": 26.7421875
+        },
+        "averageCpuOneCorePercent": 8.207052074417609,
+        "before": {
+          "cpuSeconds": 0.125,
+          "peakWorkingSetMiB": 26.4609375,
+          "privateMiB": 13.30859375,
+          "workingSetMiB": 26.4609375
+        },
+        "dpi": 96,
+        "firstFrameMs": 37.4338,
+        "frames": 583,
+        "framesPerSecond": 29.163954952444744,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "clickthrough",
+        "refreshSeconds": 10,
+        "seconds": 19.99043,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.015625,
+          "peakWorkingSetMiB": 12.75390625,
+          "privateMiB": 2.05859375,
+          "workingSetMiB": 12.75390625
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.015625,
+          "peakWorkingSetMiB": 12.75390625,
+          "privateMiB": 2.05859375,
+          "workingSetMiB": 12.75390625
+        },
+        "dpi": 96,
+        "firstFrameMs": -1.0,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "hidden",
+        "refreshSeconds": 10,
+        "seconds": 19.9990418,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.046875,
+          "peakWorkingSetMiB": 24.97265625,
+          "privateMiB": 12.02734375,
+          "workingSetMiB": 24.91796875
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.046875,
+          "peakWorkingSetMiB": 24.97265625,
+          "privateMiB": 12.02734375,
+          "workingSetMiB": 24.91796875
+        },
+        "dpi": 96,
+        "firstFrameMs": 38.4412,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "static",
+        "refreshSeconds": 10,
+        "seconds": 19.9904647,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.1875,
+          "peakWorkingSetMiB": 26.6171875,
+          "privateMiB": 12.81640625,
+          "workingSetMiB": 26.5546875
+        },
+        "averageCpuOneCorePercent": 5.000438938530024,
+        "before": {
+          "cpuSeconds": 0.1875,
+          "peakWorkingSetMiB": 26.33984375,
+          "privateMiB": 12.49609375,
+          "workingSetMiB": 26.26953125
+        },
+        "dpi": 96,
+        "firstFrameMs": 37.3318,
+        "frames": 583,
+        "framesPerSecond": 29.15255901163004,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "normal",
+        "refreshSeconds": 10,
+        "seconds": 19.9982444,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 3.265625,
+          "peakWorkingSetMiB": 26.6640625,
+          "privateMiB": 12.0703125,
+          "workingSetMiB": 26.5859375
+        },
+        "averageCpuOneCorePercent": 15.07805835498207,
+        "before": {
+          "cpuSeconds": 0.25,
+          "peakWorkingSetMiB": 26.35546875,
+          "privateMiB": 12.59765625,
+          "workingSetMiB": 26.30078125
+        },
+        "dpi": 96,
+        "firstFrameMs": 39.6926,
+        "frames": 1164,
+        "framesPerSecond": 58.19974275713702,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "smooth",
+        "refreshSeconds": 10,
+        "seconds": 20.0000884,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.3125,
+          "peakWorkingSetMiB": 26.87890625,
+          "privateMiB": 13.625,
+          "workingSetMiB": 26.82421875
+        },
+        "averageCpuOneCorePercent": 5.778181727720763,
+        "before": {
+          "cpuSeconds": 0.15625,
+          "peakWorkingSetMiB": 26.13671875,
+          "privateMiB": 11.734375,
+          "workingSetMiB": 26.13671875
+        },
+        "dpi": 96,
+        "firstFrameMs": 34.8235,
+        "frames": 583,
+        "framesPerSecond": 29.13452927361042,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "clickthrough",
+        "refreshSeconds": 10,
+        "seconds": 20.0106202,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.078125,
+          "peakWorkingSetMiB": 29.703125,
+          "privateMiB": 11.7890625,
+          "workingSetMiB": 29.63671875
+        },
+        "averageCpuOneCorePercent": 0.0780710556330445,
+        "before": {
+          "cpuSeconds": 0.0625,
+          "peakWorkingSetMiB": 28.3671875,
+          "privateMiB": 11.48046875,
+          "workingSetMiB": 28.3671875
+        },
+        "dpi": 96,
+        "firstFrameMs": 43.3693,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 806,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "hover800",
+        "refreshSeconds": 10,
+        "seconds": 20.0138193,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 3,
+        "tooltipUpdates": 3,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.140625,
+          "peakWorkingSetMiB": 30.12109375,
+          "privateMiB": 12.20703125,
+          "workingSetMiB": 30.0546875
+        },
+        "averageCpuOneCorePercent": 0.1561626457392264,
+        "before": {
+          "cpuSeconds": 0.109375,
+          "peakWorkingSetMiB": 28.875,
+          "privateMiB": 11.8828125,
+          "workingSetMiB": 28.875
+        },
+        "dpi": 96,
+        "firstFrameMs": 41.1308,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 806,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "hover800",
+        "refreshSeconds": 10,
+        "seconds": 20.0111876,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 3,
+        "tooltipUpdates": 3,
+        "repeat": 2
+      }
+    ],
+    "seconds": 20,
+    "tag": "final",
+    "version": "0.2.0"
+  },
+  "hoverStudy120": {
+    "version": "0.1.2",
+    "seconds": 20,
+    "reports": [
+      {
+        "after": {
+          "cpuSeconds": 0.25,
+          "peakWorkingSetMiB": 38.2890625,
+          "privateMiB": 8.57421875,
+          "workingSetMiB": 22.28125
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.25,
+          "peakWorkingSetMiB": 38.2890625,
+          "privateMiB": 18.33984375,
+          "workingSetMiB": 23.15234375
+        },
+        "dpi": 120,
+        "firstFrameMs": -1.0,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "hidden",
+        "seconds": 19.9886025,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.3125,
+          "peakWorkingSetMiB": 51.3359375,
+          "privateMiB": 57.328125,
+          "workingSetMiB": 50.96484375
+        },
+        "averageCpuOneCorePercent": 0.07810941639033596,
+        "before": {
+          "cpuSeconds": 0.296875,
+          "peakWorkingSetMiB": 51.3359375,
+          "privateMiB": 57.390625,
+          "workingSetMiB": 51.3359375
+        },
+        "dpi": 120,
+        "firstFrameMs": 231.8444,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "static",
+        "seconds": 20.0039902,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.21875,
+          "peakWorkingSetMiB": 51.24609375,
+          "privateMiB": 58.57421875,
+          "workingSetMiB": 51.06640625
+        },
+        "averageCpuOneCorePercent": 4.221281861541325,
+        "before": {
+          "cpuSeconds": 0.375,
+          "peakWorkingSetMiB": 51.2265625,
+          "privateMiB": 58.80078125,
+          "workingSetMiB": 51.2265625
+        },
+        "dpi": 120,
+        "firstFrameMs": 246.5001,
+        "frames": 583,
+        "framesPerSecond": 29.167494225524056,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "normal",
+        "seconds": 19.9880043,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 2.296875,
+          "peakWorkingSetMiB": 52.16015625,
+          "privateMiB": 57.7578125,
+          "workingSetMiB": 52.01171875
+        },
+        "averageCpuOneCorePercent": 9.376786090214464,
+        "before": {
+          "cpuSeconds": 0.421875,
+          "peakWorkingSetMiB": 52.15234375,
+          "privateMiB": 58.00390625,
+          "workingSetMiB": 52.15234375
+        },
+        "dpi": 120,
+        "firstFrameMs": 236.2228,
+        "frames": 584,
+        "framesPerSecond": 29.205563075654652,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "clickthrough",
+        "seconds": 19.9961904,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.9375,
+          "peakWorkingSetMiB": 52.00390625,
+          "privateMiB": 58.3125,
+          "workingSetMiB": 51.6484375
+        },
+        "averageCpuOneCorePercent": 3.5156574319398097,
+        "before": {
+          "cpuSeconds": 0.234375,
+          "peakWorkingSetMiB": 51.9921875,
+          "privateMiB": 58.34765625,
+          "workingSetMiB": 51.9921875
+        },
+        "dpi": 120,
+        "firstFrameMs": 263.8542,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 795,
+        "logicalProcessors": 16,
+        "mode": "hover-legacy",
+        "seconds": 19.9998155,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 1,
+        "tooltipUpdates": 795,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.640625,
+          "peakWorkingSetMiB": 52.51953125,
+          "privateMiB": 58.27734375,
+          "workingSetMiB": 52.15234375
+        },
+        "averageCpuOneCorePercent": 1.640929129804918,
+        "before": {
+          "cpuSeconds": 0.3125,
+          "peakWorkingSetMiB": 52.40625,
+          "privateMiB": 58.33984375,
+          "workingSetMiB": 52.40625
+        },
+        "dpi": 120,
+        "firstFrameMs": 242.9435,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 797,
+        "logicalProcessors": 16,
+        "mode": "hover300",
+        "seconds": 19.9962932,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 10,
+        "tooltipUpdates": 10,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.453125,
+          "peakWorkingSetMiB": 52.20703125,
+          "privateMiB": 58.09765625,
+          "workingSetMiB": 51.7421875
+        },
+        "averageCpuOneCorePercent": 0.9371002236735786,
+        "before": {
+          "cpuSeconds": 0.265625,
+          "peakWorkingSetMiB": 50.984375,
+          "privateMiB": 57.98046875,
+          "workingSetMiB": 50.984375
+        },
+        "dpi": 120,
+        "firstFrameMs": 239.3816,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 798,
+        "logicalProcessors": 16,
+        "mode": "hover800",
+        "seconds": 20.0085322,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 3,
+        "tooltipUpdates": 3,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.40625,
+          "peakWorkingSetMiB": 52.48828125,
+          "privateMiB": 58.109375,
+          "workingSetMiB": 52.0234375
+        },
+        "averageCpuOneCorePercent": 0.31252379087358023,
+        "before": {
+          "cpuSeconds": 0.34375,
+          "peakWorkingSetMiB": 51.171875,
+          "privateMiB": 57.93359375,
+          "workingSetMiB": 51.171875
+        },
+        "dpi": 120,
+        "firstFrameMs": 255.5819,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 796,
+        "logicalProcessors": 16,
+        "mode": "hover1200",
+        "seconds": 19.9984775,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 2,
+        "tooltipUpdates": 2,
+        "repeat": 1
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.265625,
+          "peakWorkingSetMiB": 38.14453125,
+          "privateMiB": 8.72265625,
+          "workingSetMiB": 22.25
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.265625,
+          "peakWorkingSetMiB": 38.14453125,
+          "privateMiB": 17.43359375,
+          "workingSetMiB": 23.12109375
+        },
+        "dpi": 120,
+        "firstFrameMs": -1.0,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "hidden",
+        "seconds": 19.9986531,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.296875,
+          "peakWorkingSetMiB": 51.17578125,
+          "privateMiB": 58.7734375,
+          "workingSetMiB": 50.8046875
+        },
+        "averageCpuOneCorePercent": 0.0,
+        "before": {
+          "cpuSeconds": 0.296875,
+          "peakWorkingSetMiB": 51.17578125,
+          "privateMiB": 58.8359375,
+          "workingSetMiB": 51.17578125
+        },
+        "dpi": 120,
+        "firstFrameMs": 238.0677,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "static",
+        "seconds": 19.9938365,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 1.265625,
+          "peakWorkingSetMiB": 51.203125,
+          "privateMiB": 58.6953125,
+          "workingSetMiB": 51.03515625
+        },
+        "averageCpuOneCorePercent": 4.531303469380939,
+        "before": {
+          "cpuSeconds": 0.359375,
+          "peakWorkingSetMiB": 51.203125,
+          "privateMiB": 58.92578125,
+          "workingSetMiB": 51.203125
+        },
+        "dpi": 120,
+        "firstFrameMs": 255.8462,
+        "frames": 584,
+        "framesPerSecond": 29.20034456406586,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "normal",
+        "seconds": 19.999764,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 2.21875,
+          "peakWorkingSetMiB": 52.171875,
+          "privateMiB": 58.40625,
+          "workingSetMiB": 52.03125
+        },
+        "averageCpuOneCorePercent": 9.218462660518872,
+        "before": {
+          "cpuSeconds": 0.375,
+          "peakWorkingSetMiB": 52.1640625,
+          "privateMiB": 58.65234375,
+          "workingSetMiB": 52.1640625
+        },
+        "dpi": 120,
+        "firstFrameMs": 239.8533,
+        "frames": 584,
+        "framesPerSecond": 29.19908986436893,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "mode": "clickthrough",
+        "seconds": 20.0006234,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 2.078125,
+          "peakWorkingSetMiB": 52.36328125,
+          "privateMiB": 57.75390625,
+          "workingSetMiB": 52.0078125
+        },
+        "averageCpuOneCorePercent": 8.594959783564335,
+        "before": {
+          "cpuSeconds": 0.359375,
+          "peakWorkingSetMiB": 52.3515625,
+          "privateMiB": 57.7890625,
+          "workingSetMiB": 52.3515625
+        },
+        "dpi": 120,
+        "firstFrameMs": 258.039,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 799,
+        "logicalProcessors": 16,
+        "mode": "hover-legacy",
+        "seconds": 19.9971849,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 1,
+        "tooltipUpdates": 799,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.46875,
+          "peakWorkingSetMiB": 52.375,
+          "privateMiB": 58.65234375,
+          "workingSetMiB": 52.01171875
+        },
+        "averageCpuOneCorePercent": 1.3284183413381343,
+        "before": {
+          "cpuSeconds": 0.203125,
+          "peakWorkingSetMiB": 52.26171875,
+          "privateMiB": 58.71484375,
+          "workingSetMiB": 52.26171875
+        },
+        "dpi": 120,
+        "firstFrameMs": 227.3758,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 797,
+        "logicalProcessors": 16,
+        "mode": "hover300",
+        "seconds": 19.9955836,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 10,
+        "tooltipUpdates": 10,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.390625,
+          "peakWorkingSetMiB": 52.328125,
+          "privateMiB": 58.4921875,
+          "workingSetMiB": 51.86328125
+        },
+        "averageCpuOneCorePercent": 0.7810099722052422,
+        "before": {
+          "cpuSeconds": 0.234375,
+          "peakWorkingSetMiB": 51.05078125,
+          "privateMiB": 58.43359375,
+          "workingSetMiB": 51.05078125
+        },
+        "dpi": 120,
+        "firstFrameMs": 230.7419,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 798,
+        "logicalProcessors": 16,
+        "mode": "hover800",
+        "seconds": 20.0061466,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 3,
+        "tooltipUpdates": 3,
+        "repeat": 2
+      },
+      {
+        "after": {
+          "cpuSeconds": 0.46875,
+          "peakWorkingSetMiB": 52.1875,
+          "privateMiB": 58.765625,
+          "workingSetMiB": 52.1875
+        },
+        "averageCpuOneCorePercent": 0.8590501244239453,
+        "before": {
+          "cpuSeconds": 0.296875,
+          "peakWorkingSetMiB": 51.3515625,
+          "privateMiB": 58.5625,
+          "workingSetMiB": 51.3515625
+        },
+        "dpi": 120,
+        "firstFrameMs": 286.5726,
+        "frames": 0,
+        "framesPerSecond": 0.0,
+        "heightDip": 240,
+        "hoverEvents": 796,
+        "logicalProcessors": 16,
+        "mode": "hover1200",
+        "seconds": 20.0075636,
+        "serviceProcesses": {
+          "activeProcesses": 0
+        },
+        "softwareRenderer": false,
+        "tooltipShows": 1,
+        "tooltipUpdates": 1,
+        "repeat": 2
+      }
+    ],
+    "tag": "before"
+  },
+  "live2": {
+    "reports": [
+      {
+        "after": {
+          "cpuSeconds": 0.234375,
+          "peakWorkingSetMiB": 26.0390625,
+          "privateMiB": 11.01171875,
+          "workingSetMiB": 25.9609375
+        },
+        "averageCpuOneCorePercent": 0.4165205248869031,
+        "before": {
+          "cpuSeconds": 0.109375,
+          "peakWorkingSetMiB": 25.03515625,
+          "privateMiB": 10.40625,
+          "workingSetMiB": 25.03515625
+        },
+        "dpi": 96,
+        "firstFrameMs": 51.1118,
+        "frames": 36,
+        "framesPerSecond": 1.1995791116742809,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "live",
+        "refreshSeconds": 2,
+        "seconds": 30.0105259,
+        "serviceProcesses": {
+          "activeProcesses": 2,
+          "averageCpuOneCorePercent": 1.751356917713792,
+          "cpuSeconds": 0.859375,
+          "lastReadMs": 1127.2428,
+          "notificationCount": 0,
+          "observedSeconds": 31.2257881,
+          "pollCount": 12,
+          "privateMiB": 23.8203125,
+          "totalProcesses": 2,
+          "workingSetMiB": 55.203125
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      }
+    ],
+    "seconds": 30,
+    "tag": "live2",
+    "version": "0.2.0"
+  },
+  "live10": {
+    "reports": [
+      {
+        "after": {
+          "cpuSeconds": 0.34375,
+          "peakWorkingSetMiB": 26.53515625,
+          "privateMiB": 13.24609375,
+          "workingSetMiB": 26.53515625
+        },
+        "averageCpuOneCorePercent": 0.7291627948122262,
+        "before": {
+          "cpuSeconds": 0.125,
+          "peakWorkingSetMiB": 25.24609375,
+          "privateMiB": 10.359375,
+          "workingSetMiB": 25.20703125
+        },
+        "dpi": 96,
+        "firstFrameMs": 48.6013,
+        "frames": 45,
+        "framesPerSecond": 1.499992035042294,
+        "heightDip": 240,
+        "hoverEvents": 0,
+        "logicalProcessors": 16,
+        "lowMemoryRenderer": true,
+        "mode": "live",
+        "refreshSeconds": 10,
+        "seconds": 30.0001593,
+        "serviceProcesses": {
+          "activeProcesses": 2,
+          "averageCpuOneCorePercent": 1.0995905441495664,
+          "cpuSeconds": 0.453125,
+          "lastReadMs": 1351.9989,
+          "notificationCount": 0,
+          "observedSeconds": 31.2616366,
+          "pollCount": 4,
+          "privateMiB": 23.35546875,
+          "totalProcesses": 2,
+          "workingSetMiB": 54.5234375
+        },
+        "softwareRenderer": true,
+        "tooltipShows": 0,
+        "tooltipUpdates": 0,
+        "repeat": 1
+      }
+    ],
+    "seconds": 30,
+    "tag": "live10",
+    "version": "0.2.0"
+  },
+  "hoverWithoutPhysicalPointer": {
+    "before": {
+      "tag": "baseline-controlled",
+      "seconds": 20,
+      "version": "0.1.2",
+      "reports": [
+        {
+          "after": {
+            "cpuSeconds": 0.25,
+            "peakWorkingSetMiB": 38.08984375,
+            "privateMiB": 9.0546875,
+            "workingSetMiB": 22.3046875
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.25,
+            "peakWorkingSetMiB": 38.08984375,
+            "privateMiB": 19.19921875,
+            "workingSetMiB": 23.17578125
+          },
+          "dpi": 96,
+          "firstFrameMs": -1.0,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "hidden",
+          "seconds": 20.0018706,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.296875,
+            "peakWorkingSetMiB": 50.90625,
+            "privateMiB": 57.21875,
+            "workingSetMiB": 50.61328125
+          },
+          "averageCpuOneCorePercent": 0.0781197249655717,
+          "before": {
+            "cpuSeconds": 0.28125,
+            "peakWorkingSetMiB": 50.90625,
+            "privateMiB": 57.21875,
+            "workingSetMiB": 50.90625
+          },
+          "dpi": 96,
+          "firstFrameMs": 242.7507,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "static",
+          "seconds": 20.0013505,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 1.203125,
+            "peakWorkingSetMiB": 51.1875,
+            "privateMiB": 58.12890625,
+            "workingSetMiB": 51.046875
+          },
+          "averageCpuOneCorePercent": 4.299240227010889,
+          "before": {
+            "cpuSeconds": 0.34375,
+            "peakWorkingSetMiB": 51.15234375,
+            "privateMiB": 58.359375,
+            "workingSetMiB": 51.15234375
+          },
+          "dpi": 96,
+          "firstFrameMs": 244.5712,
+          "frames": 583,
+          "framesPerSecond": 29.166045700041877,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "normal",
+          "seconds": 19.988997,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 2.25,
+            "peakWorkingSetMiB": 51.8125,
+            "privateMiB": 59.0546875,
+            "workingSetMiB": 51.68359375
+          },
+          "averageCpuOneCorePercent": 9.29926886428739,
+          "before": {
+            "cpuSeconds": 0.390625,
+            "peakWorkingSetMiB": 51.7109375,
+            "privateMiB": 59.0859375,
+            "workingSetMiB": 51.7109375
+          },
+          "dpi": 96,
+          "firstFrameMs": 243.2314,
+          "frames": 583,
+          "framesPerSecond": 29.15750587094883,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "clickthrough",
+          "seconds": 19.9948515,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.375,
+            "peakWorkingSetMiB": 52.1328125,
+            "privateMiB": 59.1796875,
+            "workingSetMiB": 51.83984375
+          },
+          "averageCpuOneCorePercent": 0.07815978149356355,
+          "before": {
+            "cpuSeconds": 0.359375,
+            "peakWorkingSetMiB": 52.10546875,
+            "privateMiB": 59.15234375,
+            "workingSetMiB": 52.10546875
+          },
+          "dpi": 96,
+          "firstFrameMs": 247.8302,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 800,
+          "logicalProcessors": 16,
+          "mode": "hover-legacy",
+          "seconds": 19.9910999,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 1,
+          "tooltipUpdates": 800,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.265625,
+            "peakWorkingSetMiB": 38.11328125,
+            "privateMiB": 8.5546875,
+            "workingSetMiB": 22.2421875
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.265625,
+            "peakWorkingSetMiB": 38.11328125,
+            "privateMiB": 17.69921875,
+            "workingSetMiB": 23.11328125
+          },
+          "dpi": 96,
+          "firstFrameMs": -1.0,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "hidden",
+          "seconds": 20.0052333,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.265625,
+            "peakWorkingSetMiB": 50.98828125,
+            "privateMiB": 57.21875,
+            "workingSetMiB": 50.6953125
+          },
+          "averageCpuOneCorePercent": 0.07817571454041522,
+          "before": {
+            "cpuSeconds": 0.25,
+            "peakWorkingSetMiB": 50.98046875,
+            "privateMiB": 57.2109375,
+            "workingSetMiB": 50.98046875
+          },
+          "dpi": 96,
+          "firstFrameMs": 223.9874,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "static",
+          "seconds": 19.9870255,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 1.15625,
+            "peakWorkingSetMiB": 51.05078125,
+            "privateMiB": 58.40234375,
+            "workingSetMiB": 50.91015625
+          },
+          "averageCpuOneCorePercent": 3.982620157992884,
+          "before": {
+            "cpuSeconds": 0.359375,
+            "peakWorkingSetMiB": 51.03515625,
+            "privateMiB": 58.64453125,
+            "workingSetMiB": 51.03515625
+          },
+          "dpi": 96,
+          "firstFrameMs": 243.0431,
+          "frames": 583,
+          "framesPerSecond": 29.13716143824127,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "normal",
+          "seconds": 20.0088125,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 2.1875,
+            "peakWorkingSetMiB": 51.71875,
+            "privateMiB": 58.91796875,
+            "workingSetMiB": 51.640625
+          },
+          "averageCpuOneCorePercent": 8.827570054808504,
+          "before": {
+            "cpuSeconds": 0.421875,
+            "peakWorkingSetMiB": 51.7109375,
+            "privateMiB": 59.0546875,
+            "workingSetMiB": 51.7109375
+          },
+          "dpi": 96,
+          "firstFrameMs": 236.2102,
+          "frames": 583,
+          "framesPerSecond": 29.1481676004438,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "mode": "clickthrough",
+          "seconds": 20.0012573,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.375,
+            "peakWorkingSetMiB": 51.92578125,
+            "privateMiB": 58.52734375,
+            "workingSetMiB": 51.6328125
+          },
+          "averageCpuOneCorePercent": 0.23421447408375248,
+          "before": {
+            "cpuSeconds": 0.328125,
+            "peakWorkingSetMiB": 51.8984375,
+            "privateMiB": 58.5,
+            "workingSetMiB": 51.8984375
+          },
+          "dpi": 96,
+          "firstFrameMs": 272.4789,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 800,
+          "logicalProcessors": 16,
+          "mode": "hover-legacy",
+          "seconds": 20.0137076,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 1,
+          "tooltipUpdates": 800,
+          "repeat": 2
+        }
+      ]
+    },
+    "after": {
+      "reports": [
+        {
+          "after": {
+            "cpuSeconds": 0.015625,
+            "peakWorkingSetMiB": 12.7421875,
+            "privateMiB": 2.06640625,
+            "workingSetMiB": 12.73828125
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.015625,
+            "peakWorkingSetMiB": 12.7421875,
+            "privateMiB": 2.06640625,
+            "workingSetMiB": 12.73828125
+          },
+          "dpi": 96,
+          "firstFrameMs": -1.0,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "hidden",
+          "refreshSeconds": 10,
+          "seconds": 20.0001375,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.03125,
+            "peakWorkingSetMiB": 25.58203125,
+            "privateMiB": 12.4765625,
+            "workingSetMiB": 25.58203125
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.03125,
+            "peakWorkingSetMiB": 25.58203125,
+            "privateMiB": 12.4765625,
+            "workingSetMiB": 25.58203125
+          },
+          "dpi": 96,
+          "firstFrameMs": 41.205,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "static",
+          "refreshSeconds": 10,
+          "seconds": 19.9982798,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 1.21875,
+            "peakWorkingSetMiB": 26.79296875,
+            "privateMiB": 12.18359375,
+            "workingSetMiB": 26.71484375
+          },
+          "averageCpuOneCorePercent": 5.549610458491095,
+          "before": {
+            "cpuSeconds": 0.109375,
+            "peakWorkingSetMiB": 26.37109375,
+            "privateMiB": 12.2734375,
+            "workingSetMiB": 26.37109375
+          },
+          "dpi": 96,
+          "firstFrameMs": 37.2307,
+          "frames": 583,
+          "framesPerSecond": 29.164375412284468,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "normal",
+          "refreshSeconds": 10,
+          "seconds": 19.9901418,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 3.296875,
+            "peakWorkingSetMiB": 26.71875,
+            "privateMiB": 12.09375,
+            "workingSetMiB": 26.62109375
+          },
+          "averageCpuOneCorePercent": 14.765522970236276,
+          "before": {
+            "cpuSeconds": 0.34375,
+            "peakWorkingSetMiB": 26.3828125,
+            "privateMiB": 11.83984375,
+            "workingSetMiB": 26.37890625
+          },
+          "dpi": 96,
+          "firstFrameMs": 36.3915,
+          "frames": 1157,
+          "framesPerSecond": 57.84960025926221,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "smooth",
+          "refreshSeconds": 10,
+          "seconds": 20.0001382,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 1.765625,
+            "peakWorkingSetMiB": 26.8203125,
+            "privateMiB": 12.28515625,
+            "workingSetMiB": 26.7421875
+          },
+          "averageCpuOneCorePercent": 8.207052074417609,
+          "before": {
+            "cpuSeconds": 0.125,
+            "peakWorkingSetMiB": 26.4609375,
+            "privateMiB": 13.30859375,
+            "workingSetMiB": 26.4609375
+          },
+          "dpi": 96,
+          "firstFrameMs": 37.4338,
+          "frames": 583,
+          "framesPerSecond": 29.163954952444744,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "clickthrough",
+          "refreshSeconds": 10,
+          "seconds": 19.99043,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.09375,
+            "peakWorkingSetMiB": 26.3046875,
+            "privateMiB": 11.8125,
+            "workingSetMiB": 26.23828125
+          },
+          "averageCpuOneCorePercent": 0.07812486445336017,
+          "before": {
+            "cpuSeconds": 0.078125,
+            "peakWorkingSetMiB": 25.2890625,
+            "privateMiB": 11.6171875,
+            "workingSetMiB": 25.28125
+          },
+          "dpi": 96,
+          "firstFrameMs": 55.5248,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 800,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "hover800",
+          "refreshSeconds": 10,
+          "seconds": 20.0000347,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 3,
+          "tooltipUpdates": 3,
+          "repeat": 1
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.015625,
+            "peakWorkingSetMiB": 12.75390625,
+            "privateMiB": 2.05859375,
+            "workingSetMiB": 12.75390625
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.015625,
+            "peakWorkingSetMiB": 12.75390625,
+            "privateMiB": 2.05859375,
+            "workingSetMiB": 12.75390625
+          },
+          "dpi": 96,
+          "firstFrameMs": -1.0,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "hidden",
+          "refreshSeconds": 10,
+          "seconds": 19.9990418,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": false,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.046875,
+            "peakWorkingSetMiB": 24.97265625,
+            "privateMiB": 12.02734375,
+            "workingSetMiB": 24.91796875
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.046875,
+            "peakWorkingSetMiB": 24.97265625,
+            "privateMiB": 12.02734375,
+            "workingSetMiB": 24.91796875
+          },
+          "dpi": 96,
+          "firstFrameMs": 38.4412,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "static",
+          "refreshSeconds": 10,
+          "seconds": 19.9904647,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 1.1875,
+            "peakWorkingSetMiB": 26.6171875,
+            "privateMiB": 12.81640625,
+            "workingSetMiB": 26.5546875
+          },
+          "averageCpuOneCorePercent": 5.000438938530024,
+          "before": {
+            "cpuSeconds": 0.1875,
+            "peakWorkingSetMiB": 26.33984375,
+            "privateMiB": 12.49609375,
+            "workingSetMiB": 26.26953125
+          },
+          "dpi": 96,
+          "firstFrameMs": 37.3318,
+          "frames": 583,
+          "framesPerSecond": 29.15255901163004,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "normal",
+          "refreshSeconds": 10,
+          "seconds": 19.9982444,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 3.265625,
+            "peakWorkingSetMiB": 26.6640625,
+            "privateMiB": 12.0703125,
+            "workingSetMiB": 26.5859375
+          },
+          "averageCpuOneCorePercent": 15.07805835498207,
+          "before": {
+            "cpuSeconds": 0.25,
+            "peakWorkingSetMiB": 26.35546875,
+            "privateMiB": 12.59765625,
+            "workingSetMiB": 26.30078125
+          },
+          "dpi": 96,
+          "firstFrameMs": 39.6926,
+          "frames": 1164,
+          "framesPerSecond": 58.19974275713702,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "smooth",
+          "refreshSeconds": 10,
+          "seconds": 20.0000884,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 1.3125,
+            "peakWorkingSetMiB": 26.87890625,
+            "privateMiB": 13.625,
+            "workingSetMiB": 26.82421875
+          },
+          "averageCpuOneCorePercent": 5.778181727720763,
+          "before": {
+            "cpuSeconds": 0.15625,
+            "peakWorkingSetMiB": 26.13671875,
+            "privateMiB": 11.734375,
+            "workingSetMiB": 26.13671875
+          },
+          "dpi": 96,
+          "firstFrameMs": 34.8235,
+          "frames": 583,
+          "framesPerSecond": 29.13452927361042,
+          "heightDip": 240,
+          "hoverEvents": 0,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "clickthrough",
+          "refreshSeconds": 10,
+          "seconds": 20.0106202,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 0,
+          "tooltipUpdates": 0,
+          "repeat": 2
+        },
+        {
+          "after": {
+            "cpuSeconds": 0.046875,
+            "peakWorkingSetMiB": 26.3046875,
+            "privateMiB": 11.8125,
+            "workingSetMiB": 26.23828125
+          },
+          "averageCpuOneCorePercent": 0.0,
+          "before": {
+            "cpuSeconds": 0.046875,
+            "peakWorkingSetMiB": 25.25390625,
+            "privateMiB": 11.5703125,
+            "workingSetMiB": 25.25390625
+          },
+          "dpi": 96,
+          "firstFrameMs": 36.6761,
+          "frames": 0,
+          "framesPerSecond": 0.0,
+          "heightDip": 240,
+          "hoverEvents": 800,
+          "logicalProcessors": 16,
+          "lowMemoryRenderer": true,
+          "mode": "hover800",
+          "refreshSeconds": 10,
+          "seconds": 19.9989924,
+          "serviceProcesses": {
+            "activeProcesses": 0
+          },
+          "softwareRenderer": true,
+          "tooltipShows": 3,
+          "tooltipUpdates": 3,
+          "repeat": 2
+        }
+      ],
+      "seconds": 20,
+      "tag": "final",
+      "version": "0.2.0"
+    }
+  },
+  "hoverPhysicalPointer": {
+    "xWithinWindow": 83,
+    "yWithinWindow": 119,
+    "stationary": true,
+    "syntheticTraceAlsoActive": true
+  },
+  "hiddenAfterInteraction": {
+    "samplesPerVersion": 1,
+    "dpi": 96,
+    "before": {
+      "workingSetMiB": 36.17,
+      "privateMiB": 23.95
+    },
+    "after": {
+      "workingSetMiB": 28.61,
+      "privateMiB": 6.79
+    }
+  }
+}

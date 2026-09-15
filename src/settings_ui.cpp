@@ -1,4 +1,5 @@
 #include "settings_ui.hpp"
+#include "icons.hpp"
 #include <algorithm>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -40,7 +41,8 @@ enum Id {
     MainWindow,
     Refresh,
     Demo,
-    Status
+    Status,
+    RefreshInterval
 };
 std::wstring to_wide(const std::string &s) {
     int n = MultiByteToWideChar(CP_UTF8, 0, s.data(), static_cast<int>(s.size()), nullptr, 0);
@@ -71,6 +73,8 @@ void SettingsWindow::open() {
         wc.lpszClassName = L"CodexBeerWidget.Preferences";
         wc.lpfnWndProc = procedure;
         wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+        wc.hIcon = app_icon();
+        wc.hIconSm = app_icon(true);
         wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
         RegisterClassExW(&wc);
         dpi_ = GetDpiForSystem();
@@ -161,6 +165,13 @@ void SettingsWindow::create_controls() {
     auto main = add(WC_COMBOBOXW, L"", CBS_DROPDOWNLIST | WS_TABSTOP, MainWindow, 2, 24, 188, 640, 110);
     for (const auto *label : {L"Короткое окно", L"Длинное окно"})
         SendMessageW(main, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(label));
+    add(L"STATIC", L"Обновление при показе", 0, 0, 2, 350, 231, 290, 24);
+    auto frequency =
+        add(WC_COMBOBOXW, L"", CBS_DROPDOWNLIST | WS_TABSTOP, RefreshInterval, 2, 350, 258, 290, 160);
+    for (int seconds : refresh_choices) {
+        auto label = std::to_wstring(seconds) + L" с";
+        SendMessageW(frequency, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(label.c_str()));
+    }
     add(L"BUTTON", L"Обновить сейчас", BS_PUSHBUTTON | WS_TABSTOP, Refresh, 2, 24, 239, 300, 32);
     add(L"BUTTON", L"Демонстрация без обращения к Codex", BS_AUTOCHECKBOX | WS_TABSTOP, Demo, 2, 24, 290, 640,
         28);
@@ -217,6 +228,9 @@ void SettingsWindow::sync() {
     SendDlgItemMessageW(window_, Shape, CB_SETCURSEL, t.ring ? 1 : 0, 0);
     SendDlgItemMessageW(window_, Performance, CB_SETCURSEL, settings_.performance, 0);
     SendDlgItemMessageW(window_, MainWindow, CB_SETCURSEL, settings_.window_index, 0);
+    const auto frequency =
+        std::find(refresh_choices.begin(), refresh_choices.end(), settings_.refresh_seconds);
+    SendDlgItemMessageW(window_, RefreshInterval, CB_SETCURSEL, frequency - refresh_choices.begin(), 0);
     unsigned modifiers = ((settings_.hotkey_modifiers & MOD_CONTROL) ? HOTKEYF_CONTROL : 0) |
                          ((settings_.hotkey_modifiers & MOD_ALT) ? HOTKEYF_ALT : 0) |
                          ((settings_.hotkey_modifiers & MOD_SHIFT) ? HOTKEYF_SHIFT : 0);
@@ -406,7 +420,11 @@ LRESULT SettingsWindow::message(UINT message, WPARAM w, LPARAM l) {
         const int id = LOWORD(w);
         const auto checked = [&](int control) { return IsDlgButtonChecked(window_, control) == BST_CHECKED; };
         if (HIWORD(w) == CBN_SELCHANGE) {
-            if (id == Shape)
+            if (id == RefreshInterval) {
+                const auto index = SendDlgItemMessageW(window_, RefreshInterval, CB_GETCURSEL, 0, 0);
+                if (index >= 0 && index < static_cast<LRESULT>(refresh_choices.size()))
+                    settings_.refresh_seconds = refresh_choices[index];
+            } else if (id == Shape)
                 settings_.theme.ring = SendDlgItemMessageW(window_, Shape, CB_GETCURSEL, 0, 0) == 1;
             else if (id == Performance)
                 settings_.performance =

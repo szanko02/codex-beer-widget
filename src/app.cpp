@@ -1,4 +1,5 @@
 #include "diagnostics.hpp"
+#include "icons.hpp"
 #include "renderer.hpp"
 #include "settings.hpp"
 #include "settings_ui.hpp"
@@ -34,6 +35,7 @@ enum Command {
 constexpr UINT TrayMessage = WM_APP + 1, RestoreMessage = WM_APP + 7;
 constexpr UINT AnimationTimer = 10;
 constexpr UINT BenchmarkTimer = 20;
+constexpr UINT HoverTimer = 21, TraceTimer = 22;
 std::string utf8(const std::wstring &s) {
     if (s.empty())
         return {};
@@ -84,6 +86,7 @@ struct App {
             CloseHandle(animation_waitable);
     }
     bool software_renderer = false;
+    bool low_memory = true;
     HWND window{}, overlay{};
     HWND settings_window{};
     std::unique_ptr<beer::Renderer> renderer;
@@ -97,6 +100,11 @@ struct App {
     double current_remaining = -1, other_remaining = -1;
     HWND tooltip{};
     std::wstring tooltip_text;
+    beer::HoverIntent hover;
+    bool tooltip_visible = false;
+    POINT hover_point{};
+    UINT tracked_zone = 0;
+    uint64_t tip_updates = 0, tip_shows = 0, hover_events = 0;
     HPOWERNOTIFY power_notify{};
     std::chrono::steady_clock::time_point phase_start = std::chrono::steady_clock::now();
     beer::Settings settings;
@@ -116,6 +124,8 @@ struct App {
             benchmark_before = beer::process_resources();
             benchmark_frames = frame_count;
             benchmark_start = std::chrono::steady_clock::now();
+            cancel_hover();
+            tip_updates = tip_shows = hover_events = 0;
             SetTimer(window, BenchmarkTimer, benchmark_seconds * 1000, nullptr);
             return;
         }
@@ -131,8 +141,13 @@ struct App {
             {"heightDip", height},
             {"dpi", GetDpiForWindow(window)},
             {"softwareRenderer", software_renderer},
+            {"lowMemoryRenderer", low_memory},
+            {"refreshSeconds", settings.refresh_seconds},
             {"firstFrameMs", first_frame_ms},
             {"frames", frame_count - benchmark_frames},
+            {"tooltipUpdates", tip_updates},
+            {"tooltipShows", tip_shows},
+            {"hoverEvents", hover_events},
             {"framesPerSecond", (frame_count - benchmark_frames) / seconds},
             {"before", benchmark_before},
             {"after", after},
@@ -175,8 +190,10 @@ struct App {
         schedule();
         if (active())
             paint();
-        else
+        else {
+            cancel_hover();
             renderer.reset();
+        }
     }
     void update_view() {
         const auto *group = state.select_group(settings.group);
@@ -239,18 +256,61 @@ struct App {
         schedule();
         paint();
     }
-    void tip(bool visible) {
+    void tip(bool visible, const POINT *position = nullptr) {
         if (!tooltip)
+            return;
+        if (!visible && !tooltip_visible)
             return;
         TOOLINFOW info{sizeof(info)};
         info.hwnd = window;
         info.uId = 1;
         if (visible) {
             POINT p{};
-            GetCursorPos(&p);
+            if (position)
+                p = *position;
+            else
+                GetCursorPos(&p);
             SendMessageW(tooltip, TTM_TRACKPOSITION, 0, MAKELPARAM(p.x + 14, p.y + 18));
+            ++tip_updates;
+            if (!tooltip_visible)
+                ++tip_shows;
         }
         SendMessageW(tooltip, TTM_TRACKACTIVATE, visible, reinterpret_cast<LPARAM>(&info));
+        tooltip_visible = visible;
+    }
+    void cancel_hover() {
+        KillTimer(window, HoverTimer);
+        hover.leave();
+        tracked_zone = 0;
+        tip(false);
+    }
+    void hover_motion(POINT point) {
+        ++hover_events;
+        if (benchmark == "hover-legacy") {
+            tip(true, &point);
+            return;
+        }
+        const double scale = 96.0 / GetDpiForWindow(window);
+        if (hover.motion(point.x * scale, point.y * scale, std::chrono::steady_clock::now())) {
+            tip(false);
+            hover_point = point;
+            SetTimer(window, HoverTimer, hover.delay_ms, nullptr);
+        }
+    }
+    void replay_hover() {
+        const auto start = benchmark_measuring ? benchmark_start : startup;
+        double t =
+            std::fmod(std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count(), 6.0);
+        double distance = t < 1.2    ? t * 20
+                          : t < 1.65 ? 24
+                          : t < 3    ? 24 + (t - 1.65) * 20
+                          : t < 3.45 ? 51
+                          : t < 4.4  ? 51 + (t - 3.45) * 20
+                                     : 70;
+        RECT rc{};
+        GetWindowRect(window, &rc);
+        POINT p{rc.left + MulDiv(65 + static_cast<int>(distance), GetDpiForWindow(window), 96), rc.top + 100};
+        hover_motion(p);
     }
     void save() {
         if (!benchmark.empty())
@@ -279,7 +339,7 @@ struct App {
         icon.uID = 1;
         icon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
         icon.uCallbackMessage = TrayMessage;
-        icon.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+        icon.hIcon = beer::app_icon(true);
         wcscpy_s(icon.szTip, L"Codex Beer Widget — показать / скрыть");
         Shell_NotifyIconW(remove ? NIM_DELETE : NIM_ADD, &icon);
         if (!remove) {
@@ -346,6 +406,8 @@ struct App {
         if (!panel) {
             beer::SettingsActions actions;
             actions.changed = [this](bool persist) {
+                if (worker)
+                    worker->set_interval(settings.refresh_seconds);
                 size(height);
                 show(settings.visible, false);
                 update_view();
@@ -370,7 +432,8 @@ struct App {
                 previous_window.reset();
                 current_remaining = -1;
                 update_view();
-                worker = std::make_unique<beer::QuotaWorker>(window, demo, active());
+                worker =
+                    std::make_unique<beer::QuotaWorker>(window, demo, active(), settings.refresh_seconds);
             };
             panel = std::make_unique<beer::SettingsWindow>(settings, std::move(actions));
         }
@@ -417,7 +480,7 @@ struct App {
         if (!active())
             return;
         if (!renderer) {
-            renderer = std::make_unique<beer::Renderer>(window);
+            renderer = std::make_unique<beer::Renderer>(window, low_memory);
             software_renderer = renderer->software();
         }
         std::wstring label =
@@ -448,7 +511,7 @@ struct App {
             render();
         } catch (const std::exception &) {
             renderer.reset();
-            renderer = std::make_unique<beer::Renderer>(window);
+            renderer = std::make_unique<beer::Renderer>(window, low_memory);
             software_renderer = renderer->software();
             render();
         }
@@ -480,6 +543,7 @@ struct App {
         show(settings.visible);
     }
     void menu() {
+        cancel_hover();
         HMENU menu = CreatePopupMenu();
         AppendMenuW(menu, MF_STRING, ToggleShow, settings.visible ? L"Скрыть" : L"Показать");
         AppendMenuW(menu, MF_STRING, OpenSettings, L"Настройки…");
@@ -575,6 +639,12 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
         case WM_CONTEXTMENU:
             app->menu();
             return 0;
+        case WM_NCRBUTTONUP:
+            app->menu();
+            return 0;
+        case WM_ENTERSIZEMOVE:
+            app->cancel_hover();
+            return 0;
         case WM_LBUTTONUP: {
             RECT rc{};
             GetClientRect(window, &rc);
@@ -587,16 +657,24 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
         }
         case WM_NCMOUSEMOVE:
         case WM_MOUSEMOVE: {
-            TRACKMOUSEEVENT tracking{
-                sizeof(tracking),
-                static_cast<DWORD>(TME_LEAVE | (message == WM_NCMOUSEMOVE ? TME_NONCLIENT : 0)), window, 0};
-            TrackMouseEvent(&tracking);
-            app->tip(true);
+            if (!app->active())
+                return 0;
+            if (app->tracked_zone != message) {
+                TRACKMOUSEEVENT tracking{
+                    sizeof(tracking),
+                    static_cast<DWORD>(TME_LEAVE | (message == WM_NCMOUSEMOVE ? TME_NONCLIENT : 0)), window,
+                    0};
+                TrackMouseEvent(&tracking);
+                app->tracked_zone = message;
+            }
+            POINT point{};
+            GetCursorPos(&point);
+            app->hover_motion(point);
             break;
         }
         case WM_NCMOUSELEAVE:
         case WM_MOUSELEAVE:
-            app->tip(false);
+            app->cancel_hover();
             return 0;
         case beer::DataMessage:
             if (app->worker) {
@@ -607,6 +685,16 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
             }
             return 0;
         case WM_TIMER:
+            if (w == TraceTimer) {
+                app->replay_hover();
+                return 0;
+            }
+            if (w == HoverTimer) {
+                KillTimer(window, HoverTimer);
+                if (app->active() && app->hover.ready(std::chrono::steady_clock::now()))
+                    app->tip(true, &app->hover_point);
+                return 0;
+            }
             if (w == BenchmarkTimer) {
                 app->benchmark_tick();
                 return 0;
@@ -689,6 +777,8 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM w, LPARAM l) {
             DestroyWindow(window);
             return 0;
         case WM_DESTROY:
+            app->cancel_hover();
+            KillTimer(window, TraceTimer);
             app->quitting = true;
             KillTimer(window, AnimationTimer);
             if (app->animation_waitable)
@@ -743,6 +833,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                                         ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&controls);
     App app;
+    app.low_memory = std::wstring(arguments).find(L"--gpu") == std::wstring::npos;
     app.animation_waitable =
         CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
     std::string settings_error;
@@ -752,8 +843,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     if (auto position = command_line.find(L"--benchmark="); position != std::wstring::npos) {
         const auto start = position + 12, end = command_line.find(L' ', start);
         app.benchmark = utf8(command_line.substr(start, end - start));
-        const std::vector<std::string> modes = {"hidden", "static",       "normal",
-                                                "smooth", "clickthrough", "live"};
+        const std::vector<std::string> modes = {"hidden",       "static",   "normal",       "smooth",
+                                                "clickthrough", "live",     "hover-legacy", "hover300",
+                                                "hover800",     "hover1200"};
         if (std::find(modes.begin(), modes.end(), app.benchmark) == modes.end()) {
             CloseHandle(singleton);
             CoUninitialize();
@@ -768,6 +860,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                 ? 2
                 : (app.benchmark == "normal" || app.benchmark == "clickthrough" ? 1 : 0);
         app.settings.click_through = app.benchmark == "clickthrough";
+        if (auto at = command_line.find(L"--refresh="); at != std::wstring::npos) {
+            try {
+                app.settings.refresh_seconds = beer::valid_refresh(std::stoi(command_line.substr(at + 10)));
+            } catch (...) {
+            }
+        }
         if (auto at = command_line.find(L"--seconds="); at != std::wstring::npos) {
             try {
                 app.benchmark_seconds = std::clamp(std::stoi(command_line.substr(at + 10)), 2, 600);
@@ -780,6 +878,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     wc.lpszClassName = window_class;
     wc.lpfnWndProc = procedure;
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    wc.hIcon = beer::app_icon();
+    wc.hIconSm = beer::app_icon(true);
     RegisterClassExW(&wc);
     if (!app.settings.monitor.empty()) {
         struct Placement {
@@ -814,7 +914,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     }
     const bool inspect = std::wstring(arguments).find(L"--inspect") != std::wstring::npos;
     HWND window = CreateWindowExW((inspect ? WS_EX_APPWINDOW : (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE)) |
-                                      WS_EX_NOREDIRECTIONBITMAP,
+                                      (app.low_memory ? WS_EX_LAYERED : WS_EX_NOREDIRECTIONBITMAP),
                                   window_class, L"Codex Beer Widget", WS_POPUP, app.settings.x,
                                   app.settings.y, 192, 240, nullptr, nullptr, instance, &app);
     if (!window) {
@@ -825,8 +925,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                   L"STATIC", L"Codex Beer Widget — click through", WS_POPUP, 120, 120, 192,
                                   240, nullptr, nullptr, instance, nullptr);
     try {
-        app.renderer = std::make_unique<beer::Renderer>(window);
-        app.software_renderer = app.renderer->software();
         app.tray();
         if (!app.register_hotkey(app.settings.hotkey_modifiers, app.settings.hotkey))
             MessageBoxW(window,
@@ -836,8 +934,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         app.recover();
         app.show(app.settings.visible);
         app.tooltip = CreateWindowExW(WS_EX_TOPMOST | WS_EX_NOACTIVATE, TOOLTIPS_CLASSW, nullptr,
-                                      WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX, 0, 0, 0, 0, window, nullptr,
-                                      instance, nullptr);
+                                      WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX | TTS_NOANIMATE | TTS_NOFADE, 0,
+                                      0, 0, 0, window, nullptr, instance, nullptr);
         TOOLINFOW info{sizeof(info)};
         info.uFlags = TTF_TRACK | TTF_ABSOLUTE;
         info.hwnd = window;
@@ -849,7 +947,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         app.power_notify = RegisterPowerSettingNotification(window, &GUID_CONSOLE_DISPLAY_STATE,
                                                             DEVICE_NOTIFY_WINDOW_HANDLE);
         if (app.benchmark.empty() || app.benchmark == "live")
-            app.worker = std::make_unique<beer::QuotaWorker>(window, app.demo, app.active());
+            app.worker = std::make_unique<beer::QuotaWorker>(window, app.demo, app.active(),
+                                                             app.settings.refresh_seconds);
         else {
             app.state.accept({{"rateLimits",
                                {{"limitId", "codex"},
@@ -859,6 +958,13 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         }
         if (!app.benchmark.empty())
             SetTimer(window, BenchmarkTimer, 2000, nullptr);
+        if (app.benchmark.starts_with("hover")) {
+            if (app.benchmark == "hover300")
+                app.hover.delay_ms = 300;
+            if (app.benchmark == "hover1200")
+                app.hover.delay_ms = 1200;
+            SetTimer(window, TraceTimer, 16, nullptr);
+        }
         if (std::wstring(arguments).find(L"--settings") != std::wstring::npos)
             app.open_settings();
         if (!settings_error.empty())

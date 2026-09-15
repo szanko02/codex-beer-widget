@@ -24,13 +24,23 @@ PowerShell and CMD shims are not executed by the native client.
 ./tools/package.ps1
 ```
 
-CPack creates `dist/CodexBeerWidget-0.1.1-windows-x64.zip` with the application,
+CPack creates `dist/CodexBeerWidget-0.2.0-windows-x64.zip` with the application,
 README, validation documents and the nlohmann/json MIT license. The directory also contains
 the standalone EXE and `SHA256SUMS.txt`. Use the ZIP for distribution so the license accompanies the EXE.
 Tests, probes, Codex CLI, local account data and settings are excluded from the package.
 GitHub Actions builds, runs CTest and packages the same configuration on Windows 2022.
 Downloads are hash-pinned; a configured toolchain and network access for the initial dependency fetch are required.
 This is a repeatable source build, not a promise of bit-identical binaries across different toolchains.
+
+Icons are embedded in all four executable targets. Their editable generator is
+`tools/generate-icons.py` (Pillow); the checked-in ICO files are sufficient to compile the project.
+`tools/performance-infographic.py` renders the checked-in measurements using matplotlib.
+Neither Python nor these packages are runtime dependencies of the widget.
+
+The default renderer uses a cached premultiplied BGRA DIB with Direct2D and UpdateLayeredWindow.
+`--gpu` selects the retained Direct3D/DirectComposition renderer. Graphics DLLs are delay-loaded,
+so starting hidden does not initialize graphics. Segoe UI faces are loaded from Windows Fonts;
+if the local font collection cannot be created, DirectWrite falls back to its system collection.
 
 For a fresh build use `cmake -S . -B out/verify -G "Visual Studio 17 2022" -A x64`,
 `cmake --build out/verify --config Release`, `ctest --test-dir out/verify -C Release --output-on-failure`,
