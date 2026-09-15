@@ -35,6 +35,7 @@ Settings settings_from_json(const Json &j) {
     s.x = number(j, "x", 120, -100000, 100000);
     s.y = number(j, "y", 120, -100000, 100000);
     s.performance = number(j, "performance", 0, 0, 2);
+    s.refresh_seconds = valid_refresh(number(j, "refreshSeconds", 10, 2, 60));
     s.window_index = number(j, "windowIndex", 0, 0, 1);
     s.top = boolean(j, "top", true);
     s.locked = boolean(j, "locked", false);
@@ -91,6 +92,7 @@ Json settings_to_json(const Settings &s) {
             {"x", s.x},
             {"y", s.y},
             {"performance", s.performance},
+            {"refreshSeconds", s.refresh_seconds},
             {"top", s.top},
             {"locked", s.locked},
             {"visible", s.visible},
