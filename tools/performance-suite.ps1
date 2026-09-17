@@ -11,7 +11,7 @@ New-Item -ItemType Directory -Force -Path $output | Out-Null
 $reports=@()
 for ($repeat=1;$repeat -le $Repeats;$repeat++) {
  foreach ($mode in $Modes) {
-  if ($mode -notin @('hidden','static','normal','smooth','clickthrough','live','hover-legacy','hover300','hover800','hover1200')) { throw 'Unknown mode' }
+  if ($mode -notin @('hidden','hidden-warm','static','normal','smooth','ring','clickthrough','live','hover-legacy','hover300','hover800','hover1200')) { throw 'Unknown mode' }
   $started=Get-Date
   $process=Start-Process -FilePath $executablePath -ArgumentList "--benchmark=$mode --seconds=$Seconds --refresh=$RefreshSeconds" -WorkingDirectory $root -WindowStyle Hidden -PassThru
   if (!$process.WaitForExit(($Seconds+40)*1000)) { Stop-Process -Id $process.Id; throw "Timeout: $mode" }
