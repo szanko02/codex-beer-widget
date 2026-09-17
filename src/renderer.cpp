@@ -42,6 +42,11 @@ ComPtr<IDWriteFontCollection1> widget_fonts(IDWriteFactory *factory) {
 }
 } // namespace
 Renderer::Renderer(HWND window, bool low_memory) : window_(window), low_memory_(low_memory) {
+    for (size_t i = 0; i < ring_points_.size(); ++i) {
+        const double angle = (-90 + i * 1.8) * std::numbers::pi / 180;
+        ring_points_[i] = D2D1::Point2F(120 + 77 * static_cast<float>(std::cos(angle)),
+                                        130 + 77 * static_cast<float>(std::sin(angle)));
+    }
     hr(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, IID_PPV_ARGS(&factory_)));
     if (low_memory_) {
         software_ = true;
@@ -269,13 +274,7 @@ void Renderer::draw(const Theme &t, double remaining, double secondary, const st
             color(t.liquid_color, t.liquid_alpha);
             const int steps = static_cast<int>(level * 2);
             for (int i = 0; i < steps; i++) {
-                const double a = (-90 + i * 1.8) * std::numbers::pi / 180,
-                             b = (-90 + (i + 1) * 1.8) * std::numbers::pi / 180;
-                dc_->DrawLine(D2D1::Point2F(120 + 77 * static_cast<float>(cos(a)),
-                                            130 + 77 * static_cast<float>(sin(a))),
-                              D2D1::Point2F(120 + 77 * static_cast<float>(cos(b)),
-                                            130 + 77 * static_cast<float>(sin(b))),
-                              brush_.Get(), 14);
+                dc_->DrawLine(ring_points_[i], ring_points_[i + 1], brush_.Get(), 14);
             }
         }
     }

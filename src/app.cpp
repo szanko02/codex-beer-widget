@@ -86,7 +86,8 @@ struct App {
             CloseHandle(animation_waitable);
     }
     bool software_renderer = false;
-    bool low_memory = true;
+    bool low_memory = false;
+    bool renderer_low_memory = false;
     HWND window{}, overlay{};
     HWND settings_window{};
     std::unique_ptr<beer::Renderer> renderer;
@@ -120,6 +121,8 @@ struct App {
     bool active() const { return settings.visible && !suspended && !session_locked && !display_off; }
     void benchmark_tick() {
         if (!benchmark_measuring) {
+            if (benchmark == "hidden-warm")
+                show(false, false);
             benchmark_measuring = true;
             benchmark_before = beer::process_resources();
             benchmark_frames = frame_count;
@@ -141,8 +144,10 @@ struct App {
             {"heightDip", height},
             {"dpi", GetDpiForWindow(window)},
             {"softwareRenderer", software_renderer},
-            {"lowMemoryRenderer", low_memory},
+            {"lowMemoryRenderer", low_memory || clicks},
             {"refreshSeconds", settings.refresh_seconds},
+            {"rendererRetained", renderer != nullptr},
+            {"animationIntervalMs", animation_interval},
             {"firstFrameMs", first_frame_ms},
             {"frames", frame_count - benchmark_frames},
             {"tooltipUpdates", tip_updates},
@@ -165,8 +170,7 @@ struct App {
     void schedule() {
         const bool animated =
             active() && ((current_remaining >= 0 && transition.active()) ||
-                         (current_remaining > 0 && theme.decoration && settings.performance > 0 &&
-                          (theme.bubbles > 0 || theme.waves > 0)));
+                         beer::decorative_animation(theme, settings.performance, current_remaining));
         const int interval = animated ? (settings.performance == 2 ? 17 : 34) : 0;
         if (interval != animation_interval) {
             KillTimer(window, AnimationTimer);
@@ -192,7 +196,9 @@ struct App {
             paint();
         else {
             cancel_hover();
-            renderer.reset();
+            // Keep ordinary hide/show cheap; release device resources for system suspension.
+            if (suspended || session_locked || display_off)
+                renderer.reset();
         }
     }
     void update_view() {
@@ -479,8 +485,13 @@ struct App {
     void paint() {
         if (!active())
             return;
+        // Layered click-through output avoids a synchronous GPU readback each frame.
+        const bool desired_low_memory = low_memory || clicks;
+        if (renderer && renderer_low_memory != desired_low_memory)
+            renderer.reset();
         if (!renderer) {
-            renderer = std::make_unique<beer::Renderer>(window, low_memory);
+            renderer = std::make_unique<beer::Renderer>(window, desired_low_memory);
+            renderer_low_memory = desired_low_memory;
             software_renderer = renderer->software();
         }
         std::wstring label =
@@ -511,7 +522,7 @@ struct App {
             render();
         } catch (const std::exception &) {
             renderer.reset();
-            renderer = std::make_unique<beer::Renderer>(window, low_memory);
+            renderer = std::make_unique<beer::Renderer>(window, desired_low_memory);
             software_renderer = renderer->software();
             render();
         }
@@ -833,7 +844,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
                                                         ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&controls);
     App app;
-    app.low_memory = std::wstring(arguments).find(L"--gpu") == std::wstring::npos;
+    app.low_memory = std::wstring(arguments).find(L"--software") != std::wstring::npos &&
+                     std::wstring(arguments).find(L"--gpu") == std::wstring::npos;
     app.animation_waitable =
         CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
     std::string settings_error;
@@ -843,9 +855,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
     if (auto position = command_line.find(L"--benchmark="); position != std::wstring::npos) {
         const auto start = position + 12, end = command_line.find(L' ', start);
         app.benchmark = utf8(command_line.substr(start, end - start));
-        const std::vector<std::string> modes = {"hidden",       "static",   "normal",       "smooth",
-                                                "clickthrough", "live",     "hover-legacy", "hover300",
-                                                "hover800",     "hover1200"};
+        const std::vector<std::string> modes = {"hidden",       "hidden-warm", "static",       "normal",
+                                                "smooth",       "ring",        "clickthrough", "live",
+                                                "hover-legacy", "hover300",    "hover800",     "hover1200"};
         if (std::find(modes.begin(), modes.end(), app.benchmark) == modes.end()) {
             CloseHandle(singleton);
             CoUninitialize();
@@ -856,10 +868,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR arguments, int) {
         settings_error.clear();
         app.settings.visible = app.benchmark != "hidden";
         app.settings.performance =
-            app.benchmark == "smooth"
+            (app.benchmark == "smooth" || app.benchmark == "ring" || app.benchmark == "hidden-warm")
                 ? 2
                 : (app.benchmark == "normal" || app.benchmark == "clickthrough" ? 1 : 0);
         app.settings.click_through = app.benchmark == "clickthrough";
+        app.settings.theme.ring = app.benchmark == "ring";
         if (auto at = command_line.find(L"--refresh="); at != std::wstring::npos) {
             try {
                 app.settings.refresh_seconds = beer::valid_refresh(std::stoi(command_line.substr(at + 10)));
