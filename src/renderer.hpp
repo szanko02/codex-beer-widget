@@ -1,5 +1,6 @@
 #pragma once
 #include "theme.hpp"
+#include <array>
 #include <d2d1_1.h>
 #include <d3d11.h>
 #include <dcomp.h>
@@ -24,6 +25,7 @@ class Renderer {
     UINT width_ = 1, height_ = 1;
     bool software_{};
     bool low_memory_{};
+    std::array<D2D1_POINT_2F, 201> ring_points_{};
     ComPtr<ID3D11Device> d3d_;
     ComPtr<ID3D11DeviceContext> immediate_;
     ComPtr<IDXGISwapChain1> swap_;

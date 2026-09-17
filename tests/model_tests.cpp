@@ -54,6 +54,13 @@ int main() {
                     level.value(std::chrono::steady_clock::now() + std::chrono::seconds(2)) == 20,
                 "transition reaches target");
         Settings settings;
+        require(decorative_animation(settings.theme, 2, 70), "mug decorations animate");
+        settings.theme.ring = true;
+        require(!decorative_animation(settings.theme, 2, 70), "ring has no moving decorations");
+        settings.theme.ring = false;
+        require(!decorative_animation(settings.theme, 0, 70) && !decorative_animation(settings.theme, 2, 0) &&
+                    !decorative_animation(settings.theme, 2, -1),
+                "economy, empty and missing values stay static");
         settings.height = 400;
         settings.x = -1800;
         settings.hotkey = VK_F8;
