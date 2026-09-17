@@ -24,7 +24,7 @@ PowerShell and CMD shims are not executed by the native client.
 ./tools/package.ps1
 ```
 
-CPack creates `dist/CodexBeerWidget-0.2.0-windows-x64.zip` with the application,
+CPack creates `dist/CodexBeerWidget-0.2.1-windows-x64.zip` with the application,
 README, validation documents and the nlohmann/json MIT license. The directory also contains
 the standalone EXE and `SHA256SUMS.txt`. Use the ZIP for distribution so the license accompanies the EXE.
 Tests, probes, Codex CLI, local account data and settings are excluded from the package.
@@ -37,8 +37,10 @@ Icons are embedded in all four executable targets. Their editable generator is
 `tools/performance-infographic.py` renders the checked-in measurements using matplotlib.
 Neither Python nor these packages are runtime dependencies of the widget.
 
-The default renderer uses a cached premultiplied BGRA DIB with Direct2D and UpdateLayeredWindow.
-`--gpu` selects the retained Direct3D/DirectComposition renderer. Graphics DLLs are delay-loaded,
+The default renderer uses Direct3D/DirectComposition. Click-through mode automatically uses a
+cached premultiplied BGRA DIB with Direct2D and UpdateLayeredWindow to avoid GPU readback.
+`--software` selects the DIB renderer for all modes; `--gpu` overrides it for the normal window.
+Graphics DLLs are delay-loaded,
 so starting hidden does not initialize graphics. Segoe UI faces are loaded from Windows Fonts;
 if the local font collection cannot be created, DirectWrite falls back to its system collection.
 
