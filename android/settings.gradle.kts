@@ -5,3 +5,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "CodexQuotaAndroid"
 include(":app", ":core-model", ":core-data", ":core-sync", ":feature-dashboard")
+include(":feature-notifications")
