@@ -16,7 +16,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun Dashboard(repository: SyncRepository) {
+fun Dashboard(repository: SyncRepository, actions: @Composable () -> Unit = {}) {
     val state by repository.states.collectAsStateWithLifecycle()
     var pairing by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -52,6 +52,7 @@ fun Dashboard(repository: SyncRepository) {
                 Button(onClick = { run { repository.pair(pairing); pairing = "" } }, enabled = !busy && pairing.isNotBlank()) { Text("Подключить") }
                 OutlinedButton(onClick = { run { repository.unpair() } }, enabled = !busy) { Text("Отключить телефон") }
                 Text(message)
+                actions()
             }
         }
     }
