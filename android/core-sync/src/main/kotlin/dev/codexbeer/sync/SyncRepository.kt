@@ -25,7 +25,7 @@ class SyncRepository private constructor(context: Context) {
     val states = store.states.stateIn(scope, SharingStarted.Eagerly, LocalState())
     private val _changes = MutableSharedFlow<LocalState>(extraBufferCapacity = 1)
     val changes = _changes.asSharedFlow()
-    init { scope.launch { store.disconnected() } }
+    private val startup = scope.launch { store.disconnected() }
 
     private fun origin(value: String): HttpUrl = value.toHttpUrl().also {
         require(it.isHttps && it.username.isEmpty() && it.password.isEmpty() &&
@@ -52,6 +52,7 @@ class SyncRepository private constructor(context: Context) {
         }
     }
     suspend fun pair(qr: String) = withContext(Dispatchers.IO) {
+        startup.join()
         mutex.withLock {
             require(qr.toByteArray().size <= 4096)
             val data = quotaJson.parseToJsonElement(qr).jsonObject
@@ -74,6 +75,7 @@ class SyncRepository private constructor(context: Context) {
         refresh()
     }
     suspend fun refresh() = withContext(Dispatchers.IO) {
+        startup.join()
         mutex.withLock {
             try {
                 val config = credentials.read() ?: return@withLock
@@ -87,6 +89,7 @@ class SyncRepository private constructor(context: Context) {
         }
     }
     suspend fun unpair() = withContext(Dispatchers.IO) {
+        startup.join()
         mutex.withLock {
             credentials.read()?.let { config ->
                 request(config.origin, "/v1/unpair", config.readerSecret, buildJsonObject {
