@@ -18,7 +18,25 @@
 | 12 | `codex/12-icons-and-memory` | Иконки всех EXE, уменьшение памяти, повторные замеры и инфографика | [Сравнение 0.2.0](PERFORMANCE-020.md), PR #14 |
 | 13 | `codex/13-cpu-priority` | Приоритет CPU, сохранение графического кеша и остановка неподвижного кольца | [Сравнение 0.2.1](PERFORMANCE-021.md), PR #16 |
 
-## Обязательные правила
+## Android sync: следующие этапы
+
+| № | Ветка | Результат / статус |
+|---|---|---|
+| 14 | `codex/14-sync-protocol` | JSON Schema v1, нормализованный сериализатор, общие fixtures; CTest 3/3, schema 14/14 |
+| 15 | `codex/15-desktop-sync-publisher` | Очередь последнего состояния, поток HTTPS, DPAPI, pairing — ожидает |
+| 16 | `codex/16-sync-relay` | Локальный relay, HTTPS/WSS, авторизация и последний snapshot — ожидает |
+| 17 | `codex/17-android-core` | Kotlin-модель, локальное хранилище, pairing — ожидает |
+| 18 | `codex/18-android-notification` | Status/Alerts channels и разрешение уведомлений — ожидает |
+| 19 | `codex/19-android-home-widget` | Glance, обновление из локального состояния — ожидает |
+| 20 | `codex/20-android-overlay` | Overlay, явный запуск сервиса, QS Tile — ожидает |
+| 21 | `codex/21-android-realtime` | WSS и FCM, backoff, offline/stale — ожидает |
+| 22 | `codex/22-android-alerts` | Пороговые события с дедупликацией — ожидает |
+| 23 | `codex/23-android-release` | Unit tests, lint, APK, физическая приёмка — ожидает |
+
+Выбран локальный сервер; публичного relay и Firebase-проекта пока нет. FCM без проекта не проверяется.
+Контракт: [Sync Protocol v1](../protocol/README.md). Секреты Codex не покидают Windows.
+
+## Правила состояния и окна
 
 Остаток = clamp(100 − usedPercent, 0, 100). Отсутствие данных не означает 0% или 100%.
 Окна определяются из ответа, группы не объединяются. Основное окно переключается нажатием подписи.
