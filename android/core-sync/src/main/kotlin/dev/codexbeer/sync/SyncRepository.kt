@@ -2,6 +2,7 @@ package dev.codexbeer.sync
 
 import android.content.Context
 import dev.codexbeer.data.*
+import dev.codexbeer.data.Credentials
 import dev.codexbeer.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
