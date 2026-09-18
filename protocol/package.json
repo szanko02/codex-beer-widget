@@ -1,0 +1,8 @@
+{
+  "name": "codex-quota-protocol",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test schema.test.mjs" },
+  "devDependencies": { "ajv": "8.17.1" }
+}
