@@ -1,5 +1,5 @@
 plugins { id("com.android.library"); kotlin("plugin.serialization") }
-android { namespace = "dev.codexbeer.data"; compileSdk = 37; defaultConfig { minSdk = 26 }; compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 } }
+android { namespace = "dev.codexbeer.data"; compileSdk { version = release(37) { minorApiLevel = 2 } }; defaultConfig { minSdk = 26 }; compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 } }
 dependencies {
     api(project(":core-model"))
     implementation("androidx.datastore:datastore-preferences:1.2.1")

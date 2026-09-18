@@ -22,7 +22,7 @@ jobs:
         with:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
-      - run: sdkmanager 'platforms;android-37' 'build-tools;36.0.0'
+      - run: sdkmanager 'platforms;android-37.2' 'build-tools;36.0.0'
       - run: bash ./gradlew :core-model:test testDebugUnitTest lintDebug :app:assembleDebug --no-daemon
         working-directory: android
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
