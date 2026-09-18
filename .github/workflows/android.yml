@@ -26,6 +26,14 @@ jobs:
       - run: bash ./gradlew :core-model:test testDebugUnitTest lintDebug :app:assembleDebug --no-daemon
         working-directory: android
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: android-reports
+          path: |
+            android/**/build/test-results/**/*.xml
+            android/**/build/reports/lint-results-*.xml
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: android-debug
           path: android/app/build/outputs/apk/debug/*.apk

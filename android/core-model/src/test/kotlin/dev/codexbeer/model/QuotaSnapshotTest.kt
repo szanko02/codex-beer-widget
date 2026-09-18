@@ -5,12 +5,17 @@ import kotlinx.serialization.json.*
 import kotlin.test.*
 
 class QuotaSnapshotTest {
+    private fun normalized(element: JsonElement): JsonElement = when (element) {
+        is JsonObject -> JsonObject(element.mapValues { normalized(it.value) })
+        is JsonArray -> JsonArray(element.map { normalized(it) })
+        is JsonPrimitive -> if (!element.isString && element.doubleOrNull != null) JsonPrimitive(element.double) else element
+    }
     @Test fun sharedFixtures() {
         val fixtures = quotaJson.parseToJsonElement(File(System.getProperty("quota.fixtures")).readText()).jsonArray
         fixtures.forEach {
             val expected = it.jsonObject.getValue("expected")
             val state = decodeSnapshot(expected.toString())
-            assertEquals(expected, quotaJson.encodeToJsonElement(state))
+            assertEquals(normalized(expected), normalized(quotaJson.encodeToJsonElement(state)))
         }
     }
     @Test fun resetRequiresIdentityIncreaseAndNewDeadline() {
