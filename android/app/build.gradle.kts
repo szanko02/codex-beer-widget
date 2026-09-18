@@ -9,5 +9,9 @@ android {
 dependencies {
     implementation(project(":feature-dashboard"))
     implementation(project(":core-sync"))
+    implementation(project(":feature-notifications"))
+    implementation(project(":feature-widget"))
     implementation("androidx.activity:activity-compose:1.13.0")
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation("androidx.compose.material3:material3")
 }
