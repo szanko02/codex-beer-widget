@@ -1,4 +1,5 @@
 #include "worker.hpp"
+#include "sync_transport.hpp"
 #include <memory>
 namespace beer {
 QuotaWorker::QuotaWorker(HWND window, bool demo, bool visible, int interval)
@@ -38,13 +39,30 @@ Json QuotaWorker::resources() {
     return resources_;
 }
 void QuotaWorker::publish(const QuotaState &state) {
+    if (sync_) {
+        try {
+            sync_->submit(state);
+        } catch (...) {
+            // Sync failure must never alter authoritative quota state or stop UI delivery.
+        }
+    }
     {
         std::lock_guard lock(mutex_);
         latest_ = state;
+        if (sync_)
+            resources_["syncDeliveryFailed"] = sync_->failed();
     }
     PostMessageW(window_, DataMessage, 0, 0);
 }
 void QuotaWorker::run() {
+    if (!demo_) {
+        try {
+            sync_ = configured_sync_publisher();
+        } catch (...) {
+            std::lock_guard lock(mutex_);
+            resources_["syncConfigurationFailed"] = true;
+        }
+    }
     using Clock = std::chrono::steady_clock;
     auto due = Clock::now();
     bool last_visible = visible_;
