@@ -1,4 +1,4 @@
-Codex Beer Widget 0.2.1 - private preview for Windows x64
+Codex Beer Widget 0.3.0 - private preview for Windows x64
 
 This application is an independent project and is not an official OpenAI product.
 Codex CLI is required separately; it is not included in this distribution.
