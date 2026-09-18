@@ -1,0 +1,13 @@
+plugins { id("com.android.application"); id("org.jetbrains.kotlin.plugin.compose") }
+android {
+    namespace = "dev.codexbeer.android"
+    compileSdk = 37
+    defaultConfig { applicationId = "dev.codexbeer.android"; minSdk = 26; targetSdk = 37; versionCode = 1; versionName = "0.1.0-dev" }
+    buildFeatures { compose = true }
+    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+}
+dependencies {
+    implementation(project(":feature-dashboard"))
+    implementation(project(":core-sync"))
+    implementation("androidx.activity:activity-compose:1.13.0")
+}
