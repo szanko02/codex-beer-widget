@@ -24,7 +24,7 @@
 |---|---|---|
 | 14 | `codex/14-sync-protocol` | JSON Schema v1, нормализованный сериализатор, общие fixtures; CTest 3/3, schema 14/14 |
 | 15 | `codex/15-desktop-sync-publisher` | Очередь, HTTPS, DPAPI и импорт конфигурации реализованы; CTest 4/4; relay-интеграция и QR — далее |
-| 16 | `codex/16-sync-relay` | Локальный relay, HTTPS/WSS, авторизация и последний snapshot — ожидает |
+| 16 | `codex/16-sync-relay` | Локальный relay, HTTPS/WSS, QR pairing, SQLite; 6 интеграционных тестов пройдены |
 | 17 | `codex/17-android-core` | Kotlin-модель, локальное хранилище, pairing — ожидает |
 | 18 | `codex/18-android-notification` | Status/Alerts channels и разрешение уведомлений — ожидает |
 | 19 | `codex/19-android-home-widget` | Glance, обновление из локального состояния — ожидает |
