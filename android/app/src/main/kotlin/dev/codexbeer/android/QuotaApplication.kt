@@ -20,7 +20,9 @@ class QuotaApplication : Application() {
             }
         }
         scope.launch {
+            val alerts = dev.codexbeer.notifications.AlertNotifications(this@QuotaApplication)
             SyncRepository.get(this@QuotaApplication).states.collect {
+                alerts.render(it)
                 StatusNotification.render(this@QuotaApplication, it)
                 WidgetUpdates.update(this@QuotaApplication)
             }

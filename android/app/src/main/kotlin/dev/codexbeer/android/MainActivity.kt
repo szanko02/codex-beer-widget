@@ -79,6 +79,7 @@ class MainActivity : ComponentActivity() {
                 Button(onClick = { startOverlay() }) { Text("Показать поверх приложений") }
                 Button(onClick = { stopService(Intent(this@MainActivity, OverlayService::class.java)) }) { Text("Скрыть плавающий виджет") }
                 OverlaySettings()
+                AlertSettings()
             }
         }
     }
@@ -100,5 +101,21 @@ class MainActivity : ComponentActivity() {
         Switch(checked = ring, onCheckedChange = { ring = it; update() })
         Text("Плавное изменение уровня")
         Switch(checked = animate, onCheckedChange = { animate = it; update() })
+    }
+    @Composable private fun AlertSettings() {
+        val preferences = remember { getSharedPreferences("alerts", MODE_PRIVATE) }
+        Text("Оповещения (нужно разрешение уведомлений)")
+        val options = listOf("threshold_50" to "Осталось 50%", "threshold_25" to "Осталось 25%",
+            "threshold_10" to "Осталось 10%", "threshold_5" to "Осталось 5%", "threshold_0" to "Лимит исчерпан",
+            "reset" to "Лимит восстановлен", "lost" to "Связь потеряна", "restored" to "Связь восстановлена")
+        options.forEach { (key, label) ->
+            var enabled by remember(key) { mutableStateOf(preferences.getBoolean(key, false)) }
+            Text(label)
+            Switch(checked = enabled, onCheckedChange = {
+                enabled = it; preferences.edit().putBoolean(key, it).apply()
+                if (it && Build.VERSION.SDK_INT >= 33 && !StatusNotification.permitted(this@MainActivity))
+                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            })
+        }
     }
 }
