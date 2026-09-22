@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocketServer, WebSocket } from 'ws';
 import Ajv from 'ajv/dist/2020.js';
+import { createPushQueue } from './push.mjs';
 
 const schema = JSON.parse(readFileSync(new URL('../../protocol/quota-state-v1.json', import.meta.url)));
 const validate = new Ajv({ strict: false }).compile(schema);
@@ -31,7 +32,7 @@ async function body(req) {
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { fail(400); }
 }
 
-export function createRelay({ database = ':memory:', adminSecret, tls, now = () => Date.now() } = {}) {
+export function createRelay({ database = ':memory:', adminSecret, tls, now = () => Date.now(), sendPush, pushInterval } = {}) {
   if (!validSecret(adminSecret)) throw new Error('A random 256-bit admin secret is required');
   const adminHash = digest(adminSecret);
   const db = new DatabaseSync(database);
@@ -40,6 +41,8 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
       id TEXT PRIMARY KEY, publisher TEXT NOT NULL, reader TEXT, invite TEXT, expires INTEGER,
       revision INTEGER NOT NULL DEFAULT 0, snapshot TEXT, received INTEGER);
   `);
+  if (!db.prepare('PRAGMA table_info(devices)').all().some(column => column.name === 'push')) db.exec('ALTER TABLE devices ADD COLUMN push TEXT');
+  const push = sendPush ? createPushQueue(sendPush, { interval: pushInterval }) : null;
   const get = id => db.prepare('SELECT * FROM devices WHERE id=?').get(id);
   const ws = new WebSocketServer({ noServer: true, maxPayload: 1024, perMessageDeflate: false });
   const rate = new Map();
@@ -63,6 +66,7 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
     return row;
   }
   function disconnect(device) {
+    push?.cancel(device);
     for (const client of ws.clients) if (client.device === device) client.terminate();
   }
   function broadcast(device, snapshot) {
@@ -106,7 +110,7 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
         const row = get(data.deviceId);
         if (!row || row.expires <= Math.floor(now() / 1000) || !equal(row.invite, digest(data.pairingSecret))) fail(401);
         const secret = token();
-        db.prepare('UPDATE devices SET reader=?,invite=NULL,expires=NULL WHERE id=?').run(digest(secret), data.deviceId);
+        db.prepare('UPDATE devices SET reader=?,invite=NULL,expires=NULL,push=NULL WHERE id=?').run(digest(secret), data.deviceId);
         disconnect(data.deviceId); // Single subscriber in v1; replacement revokes the previous phone.
         result = { deviceId: data.deviceId, readerSecret: secret };
       } else if (req.method === 'POST' && route === '/v1/unpair') {
@@ -114,7 +118,7 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
         if (!validId(data.deviceId)) fail(400);
         if (data.scope === 'subscriber') {
           authenticate(req, data.deviceId, 'reader');
-          db.prepare('UPDATE devices SET reader=NULL,invite=NULL,expires=NULL WHERE id=?').run(data.deviceId);
+          db.prepare('UPDATE devices SET reader=NULL,invite=NULL,expires=NULL,push=NULL WHERE id=?').run(data.deviceId);
         } else {
           authenticate(req, data.deviceId, 'publisher');
           db.prepare('DELETE FROM devices WHERE id=?').run(data.deviceId);
@@ -122,6 +126,17 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
         disconnect(data.deviceId);
         result = { unpaired: true };
       } else {
+        const pushMatch = /^\/v1\/devices\/([A-Za-z0-9_-]{16,128})\/push$/.exec(route);
+        if (pushMatch && req.method === 'POST') {
+          authenticate(req, pushMatch[1], 'reader');
+          const data = await body(req);
+          authenticate(req, pushMatch[1], 'reader');
+          if (typeof data.token !== 'string' || !/^[A-Za-z0-9_:\-]{20,4096}$/.test(data.token)) fail(400);
+          push?.cancel(pushMatch[1]);
+          db.prepare('UPDATE devices SET push=? WHERE id=?').run(data.token, pushMatch[1]);
+          res.end(JSON.stringify({ registered: true }));
+          return;
+        }
         const match = /^\/v1\/devices\/([A-Za-z0-9_-]{16,128})\/state$/.exec(route);
         if (!match || !['GET', 'POST'].includes(req.method)) fail(404);
         const id = match[1];
@@ -141,6 +156,7 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
             db.prepare('UPDATE devices SET revision=?,snapshot=?,received=? WHERE id=?')
               .run(snapshot.revision, serialized, Math.floor(now() / 1000), id);
             broadcast(id, serialized);
+            if (current.push) push?.enqueue(id, current.push, snapshot.revision);
           }
           result = { revision: snapshot.revision };
         }
@@ -186,6 +202,7 @@ export function createRelay({ database = ':memory:', adminSecret, tls, now = () 
     server,
     async close() {
       clearInterval(timer);
+      push?.close();
       for (const client of ws.clients) client.terminate();
       ws.close();
       await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });

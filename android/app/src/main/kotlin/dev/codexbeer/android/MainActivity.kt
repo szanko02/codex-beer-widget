@@ -26,6 +26,8 @@ import dev.codexbeer.sync.SyncRepository
 import dev.codexbeer.notifications.StatusNotification
 
 class MainActivity : ComponentActivity() {
+    override fun onStart() { super.onStart(); SyncRepository.get(this).setActive("activity", true) }
+    override fun onStop() { SyncRepository.get(this).setActive("activity", false); super.onStop() }
     private var overlayRequested = false
     private val overlayPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (overlayRequested && Settings.canDrawOverlays(this)) startOverlay()

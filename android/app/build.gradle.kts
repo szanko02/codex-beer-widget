@@ -1,4 +1,5 @@
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.plugin.compose") }
+if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
 android {
     namespace = "dev.codexbeer.android"
     compileSdk { version = release(37) { minorApiLevel = 2 } }
@@ -7,6 +8,8 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-messaging")
     implementation(project(":feature-dashboard"))
     implementation(project(":core-sync"))
     implementation(project(":feature-notifications"))

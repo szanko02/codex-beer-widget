@@ -26,6 +26,7 @@ class OverlayService : Service() {
     private val preferences by lazy { getSharedPreferences("overlay", MODE_PRIVATE) }
     private val screen = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            SyncRepository.get(context).setActive("overlay", intent.action == Intent.ACTION_SCREEN_ON)
             if (intent.action == Intent.ACTION_SCREEN_OFF) mug.cancelAnimation() else update()
         }
     }
@@ -58,6 +59,7 @@ class OverlayService : Service() {
             try { manager.addView(mug, layout); attached = true; running = true }
             catch (_: RuntimeException) { stopSelf(); return START_NOT_STICKY }
             gestures()
+            SyncRepository.get(this).setActive("overlay", getSystemService(PowerManager::class.java).isInteractive)
             scope.launch { SyncRepository.get(this@OverlayService).states.collect { current = it; update() } }
         } else { resize(); update() }
         return START_NOT_STICKY
@@ -110,6 +112,7 @@ class OverlayService : Service() {
     }
     override fun onConfigurationChanged(newConfig: Configuration) { super.onConfigurationChanged(newConfig); resize() }
     override fun onDestroy() {
+        SyncRepository.get(this).setActive("overlay", false)
         running = false; scope.cancel(); mug.cancelAnimation()
         unregisterReceiver(screen)
         if (attached) manager.removeView(mug)

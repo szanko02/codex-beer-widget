@@ -13,6 +13,11 @@ class RefreshWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         if (runAttemptCount < 4) Result.retry() else Result.failure()
     }
     companion object {
+        fun schedule(context: Context) {
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork("quota-fallback", ExistingPeriodicWorkPolicy.KEEP,
+                PeriodicWorkRequestBuilder<RefreshWorker>(15, java.util.concurrent.TimeUnit.MINUTES)
+                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build())
+        }
         fun enqueue(context: Context) {
             WorkManager.getInstance(context).enqueueUniqueWork("quota-refresh", ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequestBuilder<RefreshWorker>()

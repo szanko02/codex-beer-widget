@@ -31,6 +31,22 @@ async function setup(t, options = {}) {
   return { relay, origin, request, admin, publisher, device, reader, invite, path: `/v1/devices/${device}/state` };
 }
 
+test('push registration is reader scoped and unpair cancels pending hints', async t => {
+  const sent = [];
+  const { request, publisher, reader, device, path } = await setup(t, {
+    sendPush: async (...args) => sent.push(args), pushInterval: 100,
+  });
+  const endpoint = `/v1/devices/${device}/push`;
+  assert.equal((await request(endpoint, publisher, { token: secret() })).status, 401);
+  assert.equal((await request(endpoint, reader, { token: 'invalid' })).status, 400);
+  assert.equal((await request(endpoint, reader, { token: secret() })).status, 200);
+  await request(path, publisher, fixture);
+  await request('/v1/unpair', reader, { deviceId: device, scope: 'subscriber' });
+  await new Promise(resolve => setTimeout(resolve, 150));
+  assert.equal(sent.length, 0);
+  assert.equal((await request(endpoint, reader, { token: secret() })).status, 401);
+});
+
 test('scoped authentication, snapshot validation and idempotent revisions', async t => {
   const { request, publisher, reader, path, invite } = await setup(t);
   assert.equal((await request(path, reader)).status, 404);
