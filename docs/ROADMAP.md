@@ -25,13 +25,13 @@
 | 14 | `codex/14-sync-protocol` | JSON Schema v1, нормализованный сериализатор, общие fixtures; CTest 3/3, schema 14/14 |
 | 15 | `codex/15-desktop-sync-publisher` | Очередь, HTTPS, DPAPI и импорт конфигурации реализованы; CTest 4/4; relay-интеграция и QR — далее |
 | 16 | `codex/16-sync-relay` | Локальный relay, HTTPS/WSS, QR pairing, SQLite; 6 интеграционных тестов пройдены |
-| 17 | `codex/17-android-core` | Kotlin-модель, локальное хранилище, pairing — ожидает |
-| 18 | `codex/18-android-notification` | Status/Alerts channels и разрешение уведомлений — ожидает |
-| 19 | `codex/19-android-home-widget` | Glance, обновление из локального состояния — ожидает |
-| 20 | `codex/20-android-overlay` | Overlay, явный запуск сервиса, QS Tile — ожидает |
-| 21 | `codex/21-android-realtime` | WSS и FCM, backoff, offline/stale — ожидает |
-| 22 | `codex/22-android-alerts` | Пороговые события с дедупликацией — ожидает |
-| 23 | `codex/23-android-release` | Unit tests, lint, APK, физическая приёмка — ожидает |
+| 17 | `codex/17-android-core` | Kotlin-модель, DataStore, Keystore, pairing; общие fixtures; PR #21 |
+| 18 | `codex/18-android-notification` | Status/Alerts channels, runtime permission, ручное обновление; PR #22 |
+| 19 | `codex/19-android-home-widget` | Glance в трёх размерах, статичная кружка, локальное состояние; PR #23 |
+| 20 | `codex/20-android-overlay` | Overlay, жесты, масштаб/прозрачность, кольцо, QS Tile; PR #24 |
+| 21 | `codex/21-android-realtime` | WSS, backoff, WorkManager, опциональный FCM; PR #25; реальный FCM не проверен |
+| 22 | `codex/22-android-alerts` | Пороги 50/25/10/5/0, подтверждённый reset, связь, сохранённая дедупликация; PR #26 |
+| 23 | `codex/23-android-release` | APK preview, unit tests/lint и smoke в API 35 emulator; PR #27; физическая приёмка отдельно |
 
 Выбран локальный сервер; публичного relay и Firebase-проекта пока нет. FCM без проекта не проверяется.
 Контракт: [Sync Protocol v1](../protocol/README.md). Секреты Codex не покидают Windows.
