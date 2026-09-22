@@ -25,6 +25,7 @@ class SyncRepository private constructor(context: Context) {
     private val mutex = Mutex()
     private val pushPreferences = context.getSharedPreferences("push", Context.MODE_PRIVATE)
     private val client = OkHttpClient.Builder().callTimeout(10, TimeUnit.SECONDS)
+        .pingInterval(30, TimeUnit.SECONDS)
         .followRedirects(false).followSslRedirects(false).build()
     val states = store.states.stateIn(scope, SharingStarted.Eagerly, LocalState())
     private val _changes = MutableSharedFlow<LocalState>(extraBufferCapacity = 1)
