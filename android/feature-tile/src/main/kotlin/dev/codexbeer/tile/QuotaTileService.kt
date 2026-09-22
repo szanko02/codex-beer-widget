@@ -26,6 +26,7 @@ class QuotaTileService : TileService() {
         }
     }
     override fun onStopListening() { refresh?.cancel() }
+    @android.annotation.SuppressLint("StartActivityAndCollapseDeprecated")
     @Suppress("DEPRECATION") override fun onClick() {
         val intent = packageManager.getLaunchIntentForPackage(packageName)?.setAction("dev.codexbeer.TOGGLE_OVERLAY") ?: return
         if (Build.VERSION.SDK_INT >= 34) startActivityAndCollapse(PendingIntent.getActivity(this, 20, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
