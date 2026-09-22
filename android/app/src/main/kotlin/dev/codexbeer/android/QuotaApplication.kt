@@ -3,6 +3,7 @@ package dev.codexbeer.android
 import android.app.Application
 import dev.codexbeer.notifications.StatusNotification
 import dev.codexbeer.sync.SyncRepository
+import dev.codexbeer.widget.WidgetUpdates
 import kotlinx.coroutines.*
 
 class QuotaApplication : Application() {
@@ -13,6 +14,7 @@ class QuotaApplication : Application() {
         scope.launch {
             SyncRepository.get(this@QuotaApplication).states.collect {
                 StatusNotification.render(this@QuotaApplication, it)
+                WidgetUpdates.update(this@QuotaApplication)
             }
         }
     }
