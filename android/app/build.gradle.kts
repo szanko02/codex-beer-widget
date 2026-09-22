@@ -3,7 +3,7 @@ if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google
 android {
     namespace = "dev.codexbeer.android"
     compileSdk { version = release(37) { minorApiLevel = 2 } }
-    defaultConfig { applicationId = "dev.codexbeer.android"; minSdk = 26; targetSdk = 37; versionCode = 1; versionName = "0.1.0-dev" }
+    defaultConfig { applicationId = "dev.codexbeer.android"; minSdk = 26; targetSdk = 37; versionCode = 1; versionName = "0.1.0-preview" }
     buildFeatures { compose = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }

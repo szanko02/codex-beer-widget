@@ -42,7 +42,14 @@ on Windows; POSIX mode flags alone do not establish Windows ACLs.
 No tokens in URLs, CORS, cookies, request-body logs, or redirects. Limits: 64 KiB snapshots, 1,000 devices,
 128 streams, 120 requests/minute/IP. For public deployment use a maintained TLS endpoint, persistent restricted
 storage, and infrastructure-level connection limits. SQLite/WAL may retain physical pages until maintenance;
-the application retains no logical history. FCM is not configured yet.
+the application retains no logical history.
+
+Optional FCM: set `GOOGLE_APPLICATION_CREDENTIALS` to a private service-account file.
+`POST /v1/devices/{id}/push` accepts a reader-authenticated `{ "token": "..." }` registration.
+Only one phone token is retained; pairing replacement and unpair revoke it. Changes produce
+normal-priority hints coalesced for 30 seconds. Slow delivery keeps only the latest pending hint.
+Without Firebase configuration, HTTPS/WSS and Android's periodic fallback remain available.
+Never place service-account files in this repository; use a private external directory or `.local/`.
 
 Without a public/VPN route, the phone must reach this PC on the same network. PC shutdown stops syncing;
 clients retain old percentages and show stale state. A local relay alone cannot deliver updates over the Internet.

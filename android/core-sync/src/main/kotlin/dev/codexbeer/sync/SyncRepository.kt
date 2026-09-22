@@ -24,6 +24,7 @@ class SyncRepository private constructor(context: Context) {
     private val credentials = CredentialStore(context)
     private val mutex = Mutex()
     private val pushPreferences = context.getSharedPreferences("push", Context.MODE_PRIVATE)
+    private val alertPreferences = context.getSharedPreferences("alerts", Context.MODE_PRIVATE)
     private val client = OkHttpClient.Builder().callTimeout(10, TimeUnit.SECONDS)
         .pingInterval(30, TimeUnit.SECONDS)
         .followRedirects(false).followSslRedirects(false).build()
@@ -127,6 +128,7 @@ class SyncRepository private constructor(context: Context) {
             val reader = response.getValue("readerSecret").jsonPrimitive.content
             require(reader.matches(Regex("[A-Za-z0-9_-]{43,128}")))
             store.clear()
+            alertPreferences.edit().remove("ledger").commit()
             credentials.write(Credentials(base, id, reader))
             pushPreferences.edit().remove("registered").apply()
             generation++
@@ -164,6 +166,7 @@ class SyncRepository private constructor(context: Context) {
                 })
             }
             credentials.clear()
+            alertPreferences.edit().remove("ledger").commit()
             generation++
             streamJob?.cancel()
             store.clear()
