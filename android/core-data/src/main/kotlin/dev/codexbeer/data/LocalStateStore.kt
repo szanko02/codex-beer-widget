@@ -28,6 +28,8 @@ class LocalStateStore(context: Context) {
                 values[receivedKey] = receivedAt
                 values[connectedKey] = true
                 changed = true
+            } else if (snapshot == old) {
+                values[connectedKey] = true
             }
         }
         return changed

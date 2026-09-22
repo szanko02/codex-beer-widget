@@ -5,6 +5,8 @@ import dev.codexbeer.data.*
 import dev.codexbeer.data.Credentials
 import dev.codexbeer.model.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -21,12 +23,65 @@ class SyncRepository private constructor(context: Context) {
     private val store = LocalStateStore(context)
     private val credentials = CredentialStore(context)
     private val mutex = Mutex()
+    private val pushPreferences = context.getSharedPreferences("push", Context.MODE_PRIVATE)
     private val client = OkHttpClient.Builder().callTimeout(10, TimeUnit.SECONDS)
         .followRedirects(false).followSslRedirects(false).build()
     val states = store.states.stateIn(scope, SharingStarted.Eagerly, LocalState())
     private val _changes = MutableSharedFlow<LocalState>(extraBufferCapacity = 1)
     val changes = _changes.asSharedFlow()
     private val startup = scope.launch { store.disconnected() }
+    private val owners = mutableSetOf<String>()
+    private var streamJob: Job? = null
+    private var generation = 0L
+
+    fun setActive(owner: String, active: Boolean) {
+        scope.launch {
+            startup.join()
+            mutex.withLock {
+                val changed = if (active) owners.add(owner) else owners.remove(owner)
+                if (changed) restartStream()
+            }
+        }
+    }
+    private fun restartStream() {
+        streamJob?.cancel()
+        streamJob = if (owners.isEmpty()) null else scope.launch { streamLoop() }
+    }
+    private fun messages(config: Credentials) = callbackFlow {
+        val request = Request.Builder().url(origin(config.origin).resolve("/v1/devices/${config.deviceId}/stream")!!)
+            .header("Authorization", "Bearer ${config.readerSecret}").build()
+        val socket = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                if (text.toByteArray().size > 65536) { close(IllegalStateException("Oversized snapshot")); webSocket.cancel() }
+                else trySend(text)
+            }
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { close(t) }
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) { webSocket.close(code, null); close() }
+        })
+        awaitClose { socket.cancel() }
+    }.buffer(Channel.CONFLATED)
+
+    private suspend fun streamLoop() {
+        var backoff = 1000L
+        while (currentCoroutineContext().isActive) {
+            try {
+                val (config, epoch) = mutex.withLock { credentials.read() to generation }
+                if (config == null) return
+                messages(config).collect { text ->
+                    val snapshot = decodeSnapshot(text)
+                    mutex.withLock {
+                        if (epoch == generation && owners.isNotEmpty()) store.accept(snapshot)
+                    }
+                    backoff = 1000L
+                }
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+            }
+            mutex.withLock { store.disconnected() }
+            delay(backoff + kotlin.random.Random.nextLong(500))
+            backoff = (backoff * 2).coerceAtMost(60000)
+        }
+    }
 
     private fun origin(value: String): HttpUrl = value.toHttpUrl().also {
         require(it.isHttps && it.username.isEmpty() && it.password.isEmpty() &&
@@ -72,6 +127,9 @@ class SyncRepository private constructor(context: Context) {
             require(reader.matches(Regex("[A-Za-z0-9_-]{43,128}")))
             store.clear()
             credentials.write(Credentials(base, id, reader))
+            pushPreferences.edit().remove("registered").apply()
+            generation++
+            restartStream()
         }
         refresh()
     }
@@ -82,6 +140,13 @@ class SyncRepository private constructor(context: Context) {
                 val config = credentials.read() ?: return@withLock
                 val snapshot = decodeSnapshot(request(config.origin, "/v1/devices/${config.deviceId}/state", config.readerSecret))
                 if (store.accept(snapshot)) _changes.emit(LocalState(snapshot, System.currentTimeMillis() / 1000, ConnectionState.CONNECTED))
+                val token = pushPreferences.getString("token", null)
+                if (token != null && pushPreferences.getString("registered", null) != token) {
+                    try {
+                        request(config.origin, "/v1/devices/${config.deviceId}/push", config.readerSecret, buildJsonObject { put("token", token) })
+                        pushPreferences.edit().putString("registered", token).apply()
+                    } catch (error: Exception) { if (error is CancellationException) throw error }
+                }
             } catch (error: Exception) {
                 store.disconnected()
                 if (error is CancellationException) throw error
@@ -98,6 +163,8 @@ class SyncRepository private constructor(context: Context) {
                 })
             }
             credentials.clear()
+            generation++
+            streamJob?.cancel()
             store.clear()
         }
     }
