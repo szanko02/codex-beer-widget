@@ -30,5 +30,8 @@ sleep 2
 adb exec-out screencap -p > .local/android-smoke/overlay.png
 adb logcat -d -b crash > .local/android-smoke/crashes.txt
 if grep -q 'FATAL EXCEPTION' .local/android-smoke/crashes.txt; then cat .local/android-smoke/crashes.txt; exit 1; fi
-adb shell am stopservice -n dev.codexbeer.android/dev.codexbeer.overlay.OverlayService
+adb shell am start -W -a dev.codexbeer.TOGGLE_OVERLAY -n dev.codexbeer.android/.MainActivity
+sleep 2
+adb shell dumpsys activity services dev.codexbeer.android > .local/android-smoke/services-stopped.txt
+if grep -q 'isForeground=true' .local/android-smoke/services-stopped.txt; then exit 1; fi
 echo 'Dashboard and foreground overlay smoke passed (API 35).'
