@@ -19,6 +19,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            android/**/*.gradle.kts
+            android/gradle/wrapper/gradle-wrapper.properties
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
         with:
           packages: platform-tools
@@ -30,15 +34,19 @@ jobs:
         timeout-minutes: 10
         run: |
           mkdir -p .local/android-smoke
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/quota-avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           sudo chmod 666 /dev/kvm
           sdkmanager 'emulator' 'system-images;android-35;google_apis;x86_64' > .local/android-smoke/sdk.log
-          echo no | avdmanager create avd -n quota-smoke -k 'system-images;android-35;google_apis;x86_64' --force
+          echo no | avdmanager create avd -n quota-smoke -k 'system-images;android-35;google_apis;x86_64' --device pixel --force
+          test -f "$ANDROID_AVD_HOME/quota-smoke.ini"
           "$ANDROID_HOME/emulator/emulator" -avd quota-smoke -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -cores 2 -memory 2048 > .local/android-smoke/emulator.log 2>&1 &
           bash tools/android-smoke.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: android-reports
+          include-hidden-files: true
           path: |
             android/**/build/test-results/**/*.xml
             android/**/build/reports/lint-results-*.xml
