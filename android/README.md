@@ -1,6 +1,8 @@
 # Android companion
 
 Requires JDK 17, SDK platform `android-37.2`, and Android 8+ (API 26).
+To build, use the full [repository source](https://github.com/szanko02/codex-beer-widget),
+not the Windows distribution ZIP, which includes only this Android guide.
 From this directory:
 
 ```sh

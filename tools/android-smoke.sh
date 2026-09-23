@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 mkdir -p .local/android-smoke
+adb() { timeout 15 adb "$@"; }
 trap 'adb logcat -d > .local/android-smoke/logcat.txt 2>/dev/null || true; adb emu kill >/dev/null 2>&1 || true' EXIT
 timeout 180 adb wait-for-device
 booted=false
-for attempt in $(seq 1 90); do
+deadline=$((SECONDS + 180))
+while (( SECONDS < deadline )); do
   if [[ $(adb shell getprop sys.boot_completed | tr -d '\r') == 1 ]]; then booted=true; break; fi
   sleep 2
 done
 [[ $booted == true ]]
+echo 'Emulator boot completed.'
 adb shell input keyevent 82
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 adb shell pm grant dev.codexbeer.android android.permission.POST_NOTIFICATIONS

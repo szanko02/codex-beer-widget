@@ -29,10 +29,11 @@ jobs:
       - name: Emulator launch and overlay smoke test
         timeout-minutes: 10
         run: |
+          mkdir -p .local/android-smoke
           sudo chmod 666 /dev/kvm
-          sdkmanager 'emulator' 'system-images;android-35;google_apis;x86_64' > /tmp/sdk-smoke.log
+          sdkmanager 'emulator' 'system-images;android-35;google_apis;x86_64' > .local/android-smoke/sdk.log
           echo no | avdmanager create avd -n quota-smoke -k 'system-images;android-35;google_apis;x86_64' --force
-          "$ANDROID_HOME/emulator/emulator" -avd quota-smoke -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > /tmp/emulator.log 2>&1 &
+          "$ANDROID_HOME/emulator/emulator" -avd quota-smoke -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -cores 2 -memory 2048 > .local/android-smoke/emulator.log 2>&1 &
           bash tools/android-smoke.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()

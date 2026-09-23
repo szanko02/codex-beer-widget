@@ -48,5 +48,6 @@ enum class ConnectionState { UNPAIRED, CONNECTING, CONNECTED, STALE }
 
 data class LocalState(val snapshot: QuotaSnapshot? = null, val receivedAt: Long = 0, val connection: ConnectionState = ConnectionState.UNPAIRED) {
     fun stale(nowSeconds: Long): Boolean = connection != ConnectionState.CONNECTED || snapshot?.stale != false ||
-        receivedAt <= 0 || nowSeconds < receivedAt || nowSeconds - receivedAt >= 600
+        receivedAt <= 0 || nowSeconds < receivedAt || nowSeconds - receivedAt >= 600 ||
+        snapshot.sourceUpdatedAt == null || nowSeconds < snapshot.sourceUpdatedAt || nowSeconds - snapshot.sourceUpdatedAt >= 600
 }
