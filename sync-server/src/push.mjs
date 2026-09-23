@@ -3,14 +3,24 @@ export function createPushQueue(send, { interval = 30000 } = {}) {
   const entries = new Map();
   function enqueue(id, token, revision) {
     let entry = entries.get(id);
-    if (!entry) { entry = { timer: null }; entries.set(id, entry); }
+    if (!entry) { entry = { timer: null, busy: false, version: 0 }; entries.set(id, entry); }
     entry.token = token;
     entry.revision = revision;
-    if (entry.timer) return;
+    entry.version++;
+    schedule(id, entry);
+  }
+  function schedule(id, entry) {
+    if (entry.timer || entry.busy) return;
     entry.timer = setTimeout(async () => {
       if (entries.get(id) !== entry) return;
-      entries.delete(id);
+      entry.timer = null;
+      entry.busy = true;
+      const version = entry.version;
       try { await send(id, entry.token, entry.revision); } catch { /* Polling remains the fallback. */ }
+      entry.busy = false;
+      if (entries.get(id) !== entry) return;
+      if (entry.version !== version) schedule(id, entry);
+      else entries.delete(id);
     }, interval);
     entry.timer.unref();
   }

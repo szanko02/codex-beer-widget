@@ -6,6 +6,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -29,7 +32,11 @@ class BeerWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(DpSize(56.dp, 56.dp), DpSize(120.dp, 56.dp), DpSize(120.dp, 120.dp)))
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val state = LocalStateStore(context).states.first()
-        provideContent { Content(context, state) }
+        provideContent {
+            val states = remember { LocalStateStore(context).states }
+            val current by states.collectAsState(initial = state)
+            Content(context, current)
+        }
     }
     @Composable private fun Content(context: Context, state: LocalState) {
         val size = LocalSize.current
@@ -42,9 +49,13 @@ class BeerWidget : GlanceAppWidget() {
         val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)!!
         Column(GlanceModifier.fillMaxSize().background(Color(0xff20252b)).padding(6.dp).clickable(actionStartActivity(launch)),
             verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            if (size.width < 110.dp) {
                 Image(ImageProvider(mug(primary?.remaining)), contentDescription = "Остаток $percent",
-                    modifier = GlanceModifier.size(if (size.width >= 110.dp) 42.dp else 28.dp))
+                    modifier = GlanceModifier.size(24.dp))
+                Text(percent + if (stale) " *" else "", style = TextStyle(color = ColorProvider(Color.White), fontSize = 12.sp))
+            } else Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(ImageProvider(mug(primary?.remaining)), contentDescription = "Остаток $percent",
+                    modifier = GlanceModifier.size(42.dp))
                 Text(percent + if (stale) " *" else "", style = TextStyle(color = ColorProvider(Color.White), fontSize = 16.sp))
             }
             if (size.width >= 110.dp) {

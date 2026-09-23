@@ -1,6 +1,8 @@
 # Android companion
 
 Requires JDK 17, SDK platform `android-37.2`, and Android 8+ (API 26).
+To build, use the full [repository source](https://github.com/szanko02/codex-beer-widget),
+not the Windows distribution ZIP, which includes only this Android guide.
 From this directory:
 
 ```sh
@@ -9,6 +11,10 @@ From this directory:
 
 The debug APK is `app/build/outputs/apk/debug/app-debug.apk`. GitHub Actions
 builds it independently of the Windows CMake jobs.
+CI also installs it in an API 35 emulator, opens the dashboard, starts the
+foreground overlay, checks crash logs, and saves screenshots with test reports.
+The preview uses a debug signing key; independent CI builds may require uninstall
+before upgrading. Store distribution needs a stable private release key.
 
 ## Local pairing
 
@@ -42,3 +48,12 @@ Allow notifications and overlay access explicitly in the app. Add the Codex tile
 through Android's Quick Settings editor and widgets through the launcher.
 Device-specific background restrictions, overlay gestures and real FCM delivery
 still require physical-device acceptance; CI is not a substitute.
+
+## Alerts
+
+Thresholds 50/25/10/5/0, confirmed reset and connection events are individually
+opt-in. Threshold masks persist per group/window and rearm only after an observed
+increase with a later reset deadline. Corrections, stale data and repeated polls
+do not rearm them. Already observed thresholds are not replayed when enabled.
+Connection alerts track transitions observed in the current process; startup
+does not claim that a disconnect happened while Android had killed the process.

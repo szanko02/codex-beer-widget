@@ -22,10 +22,16 @@ class QuotaApplication : Application() {
         scope.launch {
             val alerts = dev.codexbeer.notifications.AlertNotifications(this@QuotaApplication)
             SyncRepository.get(this@QuotaApplication).states.collect {
-                alerts.render(it)
-                StatusNotification.render(this@QuotaApplication, it)
-                WidgetUpdates.update(this@QuotaApplication)
+                surface { alerts.render(it) }
+                surface { StatusNotification.render(this@QuotaApplication, it) }
+                surface { WidgetUpdates.update(this@QuotaApplication) }
             }
+        }
+    }
+    private suspend fun surface(render: suspend () -> Unit) {
+        try { render() } catch (error: Exception) {
+            if (error is CancellationException) throw error
+            // A failed launcher/notification surface must not stop other consumers.
         }
     }
 }

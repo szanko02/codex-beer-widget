@@ -19,7 +19,7 @@ class RefreshWorker(context: Context, parameters: WorkerParameters) : CoroutineW
                     .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build())
         }
         fun enqueue(context: Context) {
-            WorkManager.getInstance(context).enqueueUniqueWork("quota-refresh", ExistingWorkPolicy.KEEP,
+            WorkManager.getInstance(context).enqueueUniqueWork("quota-refresh", ExistingWorkPolicy.REPLACE,
                 OneTimeWorkRequestBuilder<RefreshWorker>()
                     .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build())
         }

@@ -26,6 +26,7 @@ import dev.codexbeer.sync.SyncRepository
 import dev.codexbeer.notifications.StatusNotification
 
 class MainActivity : ComponentActivity() {
+    private var statusRequested = false
     override fun onStart() { super.onStart(); SyncRepository.get(this).setActive("activity", true) }
     override fun onStop() { SyncRepository.get(this).setActive("activity", false); super.onStop() }
     private var overlayRequested = false
@@ -59,7 +60,8 @@ class MainActivity : ComponentActivity() {
         }
     }
     private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) showStatus()
+        if (granted && statusRequested) showStatus()
+        statusRequested = false
     }
     private fun showStatus() {
         StatusNotification.setEnabled(this, true)
@@ -67,13 +69,18 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = true
+            isAppearanceLightNavigationBars = true
+        }
         setContent {
             Dashboard(SyncRepository.get(this)) {
                 Button(onClick = { scanner.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE).setPrompt("QR подключения Codex").setBeepEnabled(false)) }) { Text("Сканировать QR") }
                 Button(onClick = {
-                    if (Build.VERSION.SDK_INT >= 33 && !StatusNotification.permitted(this@MainActivity))
+                    if (Build.VERSION.SDK_INT >= 33 && !StatusNotification.permitted(this@MainActivity)) {
+                        statusRequested = true
                         notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    else showStatus()
+                    } else showStatus()
                 }) { Text("Показывать в шторке") }
                 Button(onClick = { StatusNotification.setEnabled(this@MainActivity, false) }) { Text("Скрыть из шторки") }
                 Button(onClick = { startOverlay() }) { Text("Показать поверх приложений") }

@@ -6,6 +6,8 @@ Windows x64; C++20, Win32, Direct2D, DirectComposition. `src/`: `codex_source.*`
 
 `tests/`: model/protocol tests. `assets/icons/`: embedded icons. `tools/`: packaging, benchmarks, asset generators. `docs/`: design, validation, performance. Outputs: `build/` builds, `dist/` packages, `.local/` measurements.
 
+`protocol/`: shared JSON Schema and fixtures. `sync-server/`: Node 24 HTTPS/WSS relay. `android/`: Kotlin `core-model`, `core-data`, `core-sync` and surface feature modules; UI reads local state, never opens its own network connection.
+
 ## Build, Test, and Development Commands
 
 Requires Visual Studio 2022 Build Tools, Windows SDK, CMake 3.24+; run in Developer PowerShell:
@@ -17,6 +19,8 @@ ctest --preset release --no-tests=error  # Run model and protocol tests
 ./build/Release/CodexBeerWidget.exe --demo # Run without consuming quota
 ./tools/package.ps1                     # Create ZIP, EXE, and checksums
 ```
+
+Sync: `npm ci --prefix sync-server`, then `npm test --prefix sync-server`; schema: `npm test --prefix protocol` after installing its dependencies. Android (JDK 17): in `android/`, run `./gradlew :core-model:test testDebugUnitTest lintDebug :app:assembleDebug`. CI also runs an API 35 emulator smoke test.
 
 ## Coding Style & Naming
 
