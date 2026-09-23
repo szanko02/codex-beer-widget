@@ -49,9 +49,13 @@ class BeerWidget : GlanceAppWidget() {
         val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)!!
         Column(GlanceModifier.fillMaxSize().background(Color(0xff20252b)).padding(6.dp).clickable(actionStartActivity(launch)),
             verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            if (size.width < 110.dp) {
                 Image(ImageProvider(mug(primary?.remaining)), contentDescription = "Остаток $percent",
-                    modifier = GlanceModifier.size(if (size.width >= 110.dp) 42.dp else 28.dp))
+                    modifier = GlanceModifier.size(24.dp))
+                Text(percent + if (stale) " *" else "", style = TextStyle(color = ColorProvider(Color.White), fontSize = 12.sp))
+            } else Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(ImageProvider(mug(primary?.remaining)), contentDescription = "Остаток $percent",
+                    modifier = GlanceModifier.size(42.dp))
                 Text(percent + if (stale) " *" else "", style = TextStyle(color = ColorProvider(Color.White), fontSize = 16.sp))
             }
             if (size.width >= 110.dp) {
