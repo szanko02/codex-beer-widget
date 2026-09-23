@@ -40,6 +40,8 @@ class QuotaSnapshotTest {
         assertTrue(state.stale(701))
         assertTrue(state.stale(99))
         assertTrue(state.copy(receivedAt = 700).stale(701)) // A heartbeat cannot refresh an old observation.
+        assertFalse(state.copy(snapshot = quota.copy(sourceUpdatedAt = 140)).stale(110))
+        assertTrue(state.copy(snapshot = quota.copy(sourceUpdatedAt = 180)).stale(110))
         assertEquals(64.0, state.copy(connection = ConnectionState.STALE).snapshot!!.groups["codex"]!!.windows[0].remaining)
     }
 }
