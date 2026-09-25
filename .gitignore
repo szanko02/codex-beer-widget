@@ -8,3 +8,11 @@
 auth.json
 *.log
 __pycache__/
+node_modules/
+/android/.gradle/
+/android/.kotlin/
+/android/**/build/
+/android/local.properties
+/android/**/google-services.json
+*.jks
+*.keystore

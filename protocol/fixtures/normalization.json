@@ -1,0 +1,298 @@
+[
+  {
+    "name": "normal",
+    "events": [
+      {
+        "at": 1789721000,
+        "response": {
+          "rateLimitsByLimitId": {
+            "codex": {
+              "primary": {
+                "usedPercent": 36,
+                "windowDurationMins": 300,
+                "resetsAt": 1789730000
+              },
+              "secondary": {
+                "usedPercent": 19,
+                "windowDurationMins": 10080,
+                "resetsAt": 1790300000
+              }
+            }
+          },
+          "account": {
+            "email": "secret@example.com",
+            "token": "private-token"
+          }
+        }
+      }
+    ],
+    "expected": {
+      "version": 1,
+      "revision": 153,
+      "sourceUpdatedAt": 1789721000,
+      "stale": false,
+      "groups": {
+        "codex": {
+          "name": "codex",
+          "sourceUpdatedAt": 1789721000,
+          "stale": false,
+          "windows": [
+            {
+              "slot": "primary",
+              "remaining": 64,
+              "windowMinutes": 300,
+              "resetsAt": 1789730000
+            },
+            {
+              "slot": "secondary",
+              "remaining": 81,
+              "windowMinutes": 10080,
+              "resetsAt": 1790300000
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "offline-retains",
+    "events": [
+      {
+        "at": 1789721000,
+        "response": {
+          "rateLimitsByLimitId": {
+            "codex": {
+              "primary": {
+                "usedPercent": 36,
+                "windowDurationMins": 300,
+                "resetsAt": 1789730000
+              },
+              "secondary": {
+                "usedPercent": 19,
+                "windowDurationMins": 10080,
+                "resetsAt": 1790300000
+              }
+            }
+          },
+          "account": {
+            "email": "secret@example.com",
+            "token": "private-token"
+          }
+        }
+      },
+      {
+        "failure": "secret@example.com private-token C:/private/path"
+      }
+    ],
+    "expected": {
+      "version": 1,
+      "revision": 153,
+      "sourceUpdatedAt": 1789721000,
+      "stale": true,
+      "groups": {
+        "codex": {
+          "name": "codex",
+          "sourceUpdatedAt": 1789721000,
+          "stale": true,
+          "windows": [
+            {
+              "slot": "primary",
+              "remaining": 64,
+              "windowMinutes": 300,
+              "resetsAt": 1789730000
+            },
+            {
+              "slot": "secondary",
+              "remaining": 81,
+              "windowMinutes": 10080,
+              "resetsAt": 1790300000
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "no-data-clears",
+    "events": [
+      {
+        "at": 1789721000,
+        "response": {
+          "rateLimitsByLimitId": {
+            "codex": {
+              "primary": {
+                "usedPercent": 36,
+                "windowDurationMins": 300,
+                "resetsAt": 1789730000
+              },
+              "secondary": {
+                "usedPercent": 19,
+                "windowDurationMins": 10080,
+                "resetsAt": 1790300000
+              }
+            }
+          },
+          "account": {
+            "email": "secret@example.com",
+            "token": "private-token"
+          }
+        }
+      },
+      {
+        "at": 1789721060,
+        "response": {
+          "rateLimits": null
+        }
+      }
+    ],
+    "expected": {
+      "version": 1,
+      "revision": 153,
+      "sourceUpdatedAt": 1789721060,
+      "stale": false,
+      "groups": {}
+    }
+  },
+  {
+    "name": "never-observed",
+    "events": [],
+    "expected": {
+      "version": 1,
+      "revision": 153,
+      "sourceUpdatedAt": null,
+      "stale": true,
+      "groups": {}
+    }
+  },
+  {
+    "name": "null-and-clamp",
+    "events": [
+      {
+        "at": 1789721000,
+        "response": {
+          "rateLimits": {
+            "limitId": "codex",
+            "primary": {
+              "usedPercent": null,
+              "windowDurationMins": 0
+            },
+            "secondary": {
+              "usedPercent": 120
+            }
+          }
+        }
+      }
+    ],
+    "expected": {
+      "version": 1,
+      "revision": 153,
+      "sourceUpdatedAt": 1789721000,
+      "stale": false,
+      "groups": {
+        "codex": {
+          "name": "codex",
+          "sourceUpdatedAt": 1789721000,
+          "stale": false,
+          "windows": [
+            {
+              "slot": "primary",
+              "remaining": null,
+              "windowMinutes": null,
+              "resetsAt": null
+            },
+            {
+              "slot": "secondary",
+              "remaining": 0,
+              "windowMinutes": null,
+              "resetsAt": null
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "partial-preserves-stale",
+    "events": [
+      {
+        "at": 1789721000,
+        "response": {
+          "rateLimitsByLimitId": {
+            "codex": {
+              "primary": {
+                "usedPercent": 36,
+                "windowDurationMins": 300,
+                "resetsAt": 1789730000
+              },
+              "secondary": {
+                "usedPercent": 19,
+                "windowDurationMins": 10080,
+                "resetsAt": 1790300000
+              }
+            }
+          },
+          "account": {
+            "email": "secret@example.com",
+            "token": "private-token"
+          }
+        }
+      },
+      {
+        "failure": "offline"
+      },
+      {
+        "at": 1789721060,
+        "partial": true,
+        "response": {
+          "rateLimits": {
+            "limitId": "other",
+            "primary": {
+              "usedPercent": -1,
+              "windowDurationMins": 17
+            }
+          }
+        }
+      }
+    ],
+    "expected": {
+      "version": 1,
+      "revision": 153,
+      "sourceUpdatedAt": 1789721000,
+      "stale": true,
+      "groups": {
+        "codex": {
+          "name": "codex",
+          "sourceUpdatedAt": 1789721000,
+          "stale": true,
+          "windows": [
+            {
+              "slot": "primary",
+              "remaining": 64,
+              "windowMinutes": 300,
+              "resetsAt": 1789730000
+            },
+            {
+              "slot": "secondary",
+              "remaining": 81,
+              "windowMinutes": 10080,
+              "resetsAt": 1790300000
+            }
+          ]
+        },
+        "other": {
+          "name": "other",
+          "sourceUpdatedAt": 1789721060,
+          "stale": false,
+          "windows": [
+            {
+              "slot": "primary",
+              "remaining": 100,
+              "windowMinutes": 17,
+              "resetsAt": null
+            }
+          ]
+        }
+      }
+    }
+  }
+]

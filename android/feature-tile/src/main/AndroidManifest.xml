@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <service android:name="dev.codexbeer.tile.QuotaTileService" android:exported="true"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" android:label="Codex" android:icon="@drawable/ic_quota">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+        </service>
+    </application>
+</manifest>

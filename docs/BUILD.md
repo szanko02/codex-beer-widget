@@ -24,7 +24,7 @@ PowerShell and CMD shims are not executed by the native client.
 ./tools/package.ps1
 ```
 
-CPack creates `dist/CodexBeerWidget-0.2.1-windows-x64.zip` with the application,
+CPack creates `dist/CodexBeerWidget-0.3.0-windows-x64.zip` with the application,
 README, validation documents and the nlohmann/json MIT license. The directory also contains
 the standalone EXE and `SHA256SUMS.txt`. Use the ZIP for distribution so the license accompanies the EXE.
 Tests, probes, Codex CLI, local account data and settings are excluded from the package.

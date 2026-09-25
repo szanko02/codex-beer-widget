@@ -1,7 +1,9 @@
 #pragma once
 #include "interaction.hpp"
 #include "limit_model.hpp"
+#include "sync_publisher.hpp"
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <thread>
 namespace beer {
@@ -39,6 +41,7 @@ class QuotaWorker {
     std::condition_variable wake_;
     std::optional<QuotaState> latest_;
     Json resources_;
+    std::unique_ptr<SyncPublisher> sync_;
     void publish(const QuotaState &state);
     void run();
 };

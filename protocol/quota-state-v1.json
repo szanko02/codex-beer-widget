@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Quota snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "revision", "sourceUpdatedAt", "stale", "groups"],
+  "properties": {
+    "version": { "const": 1 },
+    "revision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "sourceUpdatedAt": { "$ref": "#/$defs/timestamp" },
+    "stale": { "type": "boolean" },
+    "groups": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": { "minLength": 1, "maxLength": 128 },
+      "additionalProperties": { "$ref": "#/$defs/group" }
+    }
+  },
+  "$defs": {
+    "timestamp": { "type": ["integer", "null"], "minimum": 1, "maximum": 9007199254740991 },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot", "remaining", "windowMinutes", "resetsAt"],
+      "properties": {
+        "slot": { "enum": ["primary", "secondary"] },
+        "remaining": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "windowMinutes": { "type": ["integer", "null"], "minimum": 1, "maximum": 9007199254740991 },
+        "resetsAt": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sourceUpdatedAt", "stale", "windows"],
+      "properties": {
+        "name": { "type": "string", "maxLength": 128 },
+        "sourceUpdatedAt": { "$ref": "#/$defs/timestamp" },
+        "stale": { "type": "boolean" },
+        "windows": {
+          "type": "array",
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/window" },
+          "allOf": [
+            { "contains": { "properties": { "slot": { "const": "primary" } } }, "minContains": 0, "maxContains": 1 },
+            { "contains": { "properties": { "slot": { "const": "secondary" } } }, "minContains": 0, "maxContains": 1 }
+          ]
+        }
+      }
+    }
+  }
+}
