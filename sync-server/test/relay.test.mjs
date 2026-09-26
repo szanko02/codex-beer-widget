@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { once } from 'node:events';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 import { request as httpsRequest } from 'node:https';
 import { WebSocket } from 'ws';
 import { createRelay } from '../src/relay.mjs';
@@ -134,7 +136,7 @@ test('reject cross-origin requests and rate-limit guesses', async t => {
 test('HTTPS and WSS verify the local CA without disabling TLS validation', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'quota-tls-'));
   const key = join(directory, 'key.pem'), cert = join(directory, 'cert.pem');
-  const openssl = process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl';
+  const openssl = process.env.OPENSSL ?? (process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl');
   let relay;
   try {
     execFileSync(openssl, ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1', '-subj', '/CN=localhost',
@@ -166,6 +168,23 @@ test('HTTPS and WSS verify the local CA without disabling TLS validation', async
     await post(`/v1/devices/${device}/state`, publisher, fixture);
     assert.deepEqual(JSON.parse((await received)[0]), fixture);
     socket.terminate();
+    const adminFile = join(directory, 'admin.txt'), output = join(directory, 'public');
+    writeFileSync(adminFile, admin);
+    const run = promisify(execFile);
+    const env = { ...process.env, NODE_EXTRA_CA_CERTS: cert };
+    const provision = fileURLToPath(new URL('../tools/provision-public.mjs', import.meta.url));
+    await run(process.execPath, [provision, origin, adminFile, output], { env });
+    const config = JSON.parse(readFileSync(join(output, 'publisher.json')));
+    const firstInvite = JSON.parse(readFileSync(join(output, 'pairing.json')));
+    assert.equal(firstInvite.origin, origin);
+    assert.ok(readFileSync(join(output, 'pairing.png')).length > 100);
+    await assert.rejects(run(process.execPath, [provision, origin, adminFile, output], { env }));
+    assert.deepEqual(JSON.parse(readFileSync(join(output, 'publisher.json'))), config);
+    await run(process.execPath, [fileURLToPath(new URL('../tools/pair.mjs', import.meta.url)), '--directory', output, '--public'], { env });
+    const refreshedInvite = JSON.parse(readFileSync(join(output, 'pairing.json')));
+    assert.notEqual(refreshedInvite.pairingSecret, firstInvite.pairingSecret);
+    const redeemed = await post('/v1/pair/redeem', '', refreshedInvite);
+    assert.equal(redeemed.deviceId, config.deviceId);
   } finally {
     if (relay) await relay.close();
     rmSync(directory, { recursive: true, force: true });
