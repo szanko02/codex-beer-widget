@@ -34,6 +34,40 @@ std::wstring codex_path() {
     n = SearchPathW(nullptr, L"codex.exe", nullptr, 32768, value, nullptr);
     if (n && n < 32768)
         return value;
+    n = GetEnvironmentVariableW(L"LOCALAPPDATA", value, 32768);
+    if (n && n < 32768) {
+        const auto bin = std::filesystem::path(value) / L"OpenAI" / L"Codex" / L"bin";
+        std::error_code ec;
+        if (std::filesystem::is_directory(bin, ec) && !ec) {
+            std::filesystem::directory_iterator it(bin, ec), end;
+            std::filesystem::file_time_type newest{};
+            std::wstring selected;
+            bool found = false;
+            while (!ec && it != end) {
+                ec.clear();
+                if (it->is_directory(ec) && !ec) {
+                    const auto executable = it->path() / L"codex.exe";
+                    ec.clear();
+                    if (std::filesystem::is_regular_file(executable, ec) && !ec) {
+                        ec.clear();
+                        const auto modified = std::filesystem::last_write_time(executable, ec);
+                        if (!ec) {
+                            const auto path = executable.wstring();
+                            if (!found || modified > newest || (modified == newest && path < selected)) {
+                                newest = modified;
+                                selected = path;
+                                found = true;
+                            }
+                        }
+                    }
+                }
+                ec.clear();
+                it.increment(ec);
+            }
+            if (found)
+                return selected;
+        }
+    }
     throw std::runtime_error(
         "Codex not found. Install Codex CLI or set CODEX_WIDGET_CODEX_PATH to codex.exe.");
 }
