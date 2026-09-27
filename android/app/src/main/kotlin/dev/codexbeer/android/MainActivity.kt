@@ -14,6 +14,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +27,8 @@ import com.journeyapps.barcodescanner.ScanOptions
 import dev.codexbeer.overlay.OverlayService
 import kotlinx.coroutines.launch
 import dev.codexbeer.dashboard.Dashboard
+import dev.codexbeer.dashboard.BeerTheme
+import androidx.compose.foundation.isSystemInDarkTheme
 import dev.codexbeer.sync.SyncRepository
 import dev.codexbeer.notifications.StatusNotification
 
@@ -36,8 +43,13 @@ class MainActivity : ComponentActivity() {
     }
     private val scanner = registerForActivityResult(ScanContract()) { result ->
         result.contents?.let { qr -> lifecycleScope.launch {
-            try { SyncRepository.get(this@MainActivity).pair(qr) }
-            catch (_: Exception) { Toast.makeText(this@MainActivity, "Pairing не выполнен: проверьте сеть и сертификат", Toast.LENGTH_LONG).show() }
+            try {
+                SyncRepository.get(this@MainActivity).pair(qr)
+                Toast.makeText(this@MainActivity, "Компьютер подключён", Toast.LENGTH_SHORT).show()
+            }
+            catch (error: Exception) {
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                Toast.makeText(this@MainActivity, "Не удалось подключиться. Проверьте интернет и отсканируйте новый QR.", Toast.LENGTH_LONG).show() }
         } }
     }
     private fun startOverlay() {
@@ -69,24 +81,34 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = true
-            isAppearanceLightNavigationBars = true
-        }
         setContent {
-            Dashboard(SyncRepository.get(this)) {
-                Button(onClick = { scanner.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE).setPrompt("QR подключения Codex").setBeepEnabled(false)) }) { Text("Сканировать QR") }
-                Button(onClick = {
-                    if (Build.VERSION.SDK_INT >= 33 && !StatusNotification.permitted(this@MainActivity)) {
-                        statusRequested = true
-                        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    } else showStatus()
-                }) { Text("Показывать в шторке") }
-                Button(onClick = { StatusNotification.setEnabled(this@MainActivity, false) }) { Text("Скрыть из шторки") }
-                Button(onClick = { startOverlay() }) { Text("Показать поверх приложений") }
-                Button(onClick = { stopService(Intent(this@MainActivity, OverlayService::class.java)) }) { Text("Скрыть плавающий виджет") }
-                OverlaySettings()
-                AlertSettings()
+            BeerTheme {
+                val dark = isSystemInDarkTheme()
+                SideEffect {
+                    androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).apply {
+                        isAppearanceLightStatusBars = !dark
+                        isAppearanceLightNavigationBars = !dark
+                    }
+                }
+                Dashboard(SyncRepository.get(this), onScan = {
+                    scanner.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                        .setPrompt("Наведите камеру на QR подключения на компьютере").setBeepEnabled(false))
+                }) {
+                    Button(onClick = {
+                        if (Build.VERSION.SDK_INT >= 33 && !StatusNotification.permitted(this@MainActivity)) {
+                            statusRequested = true
+                            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else showStatus()
+                    }) { Text("Показывать в шторке") }
+                    Button(onClick = { StatusNotification.setEnabled(this@MainActivity, false) }) { Text("Скрыть из шторки") }
+                    Button(onClick = { startOverlay() }) { Text("Показать поверх приложений") }
+                    Button(onClick = { stopService(Intent(this@MainActivity, OverlayService::class.java)) }) { Text("Скрыть плавающий виджет") }
+                    HorizontalDivider()
+                    Text("Плавающий виджет", style = MaterialTheme.typography.titleLarge)
+                    OverlaySettings()
+                    HorizontalDivider()
+                    AlertSettings()
+                }
             }
         }
     }
@@ -104,25 +126,29 @@ class MainActivity : ComponentActivity() {
         Slider(value = size, onValueChange = { size = it; update() }, valueRange = 80f..240f)
         Text("Непрозрачность: ${(opacity * 100).toInt()}%")
         Slider(value = opacity, onValueChange = { opacity = it; update() }, valueRange = .2f..1f)
-        Text("Минималистическое кольцо")
-        Switch(checked = ring, onCheckedChange = { ring = it; update() })
-        Text("Плавное изменение уровня")
-        Switch(checked = animate, onCheckedChange = { animate = it; update() })
+        SettingSwitch("Минималистическое кольцо", ring) { ring = it; update() }
+        SettingSwitch("Плавное изменение уровня", animate) { animate = it; update() }
     }
     @Composable private fun AlertSettings() {
         val preferences = remember { getSharedPreferences("alerts", MODE_PRIVATE) }
-        Text("Оповещения (нужно разрешение уведомлений)")
+        Text("Оповещения", style = MaterialTheme.typography.titleLarge)
         val options = listOf("threshold_50" to "Осталось 50%", "threshold_25" to "Осталось 25%",
             "threshold_10" to "Осталось 10%", "threshold_5" to "Осталось 5%", "threshold_0" to "Лимит исчерпан",
             "reset" to "Лимит восстановлен", "lost" to "Связь потеряна", "restored" to "Связь восстановлена")
         options.forEach { (key, label) ->
             var enabled by remember(key) { mutableStateOf(preferences.getBoolean(key, false)) }
-            Text(label)
-            Switch(checked = enabled, onCheckedChange = {
+            SettingSwitch(label, enabled) {
                 enabled = it; preferences.edit().putBoolean(key, it).apply()
                 if (it && Build.VERSION.SDK_INT >= 33 && !StatusNotification.permitted(this@MainActivity))
                     notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            })
+            }
+        }
+    }
+    @Composable private fun SettingSwitch(label: String, checked: Boolean, onChanged: (Boolean) -> Unit) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, modifier = Modifier.weight(1f))
+            Switch(checked = checked, onCheckedChange = onChanged)
         }
     }
 }

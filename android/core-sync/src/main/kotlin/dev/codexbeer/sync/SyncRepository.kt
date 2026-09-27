@@ -31,7 +31,9 @@ class SyncRepository private constructor(context: Context) {
     val states = store.states.stateIn(scope, SharingStarted.Eagerly, LocalState())
     private val _changes = MutableSharedFlow<LocalState>(extraBufferCapacity = 1)
     val changes = _changes.asSharedFlow()
-    private val startup = scope.launch { store.disconnected() }
+    private val _paired = MutableStateFlow(false)
+    val paired = _paired.asStateFlow()
+    private val startup = scope.launch { store.disconnected(); _paired.value = credentials.read() != null }
     private val owners = mutableSetOf<String>()
     private var streamJob: Job? = null
     private var generation = 0L
@@ -130,11 +132,15 @@ class SyncRepository private constructor(context: Context) {
             store.clear()
             alertPreferences.edit().remove("ledger").commit()
             credentials.write(Credentials(base, id, reader))
+            _paired.value = true
             pushPreferences.edit().remove("registered").apply()
             generation++
             restartStream()
         }
-        refresh()
+        // Pairing remains valid when the publisher has not sent its first snapshot yet.
+        try { refresh() } catch (error: Exception) {
+            if (error is CancellationException) throw error
+        }
     }
     suspend fun refresh() = withContext(Dispatchers.IO) {
         startup.join()
@@ -166,6 +172,7 @@ class SyncRepository private constructor(context: Context) {
                 })
             }
             credentials.clear()
+            _paired.value = false
             alertPreferences.edit().remove("ledger").commit()
             generation++
             streamJob?.cancel()

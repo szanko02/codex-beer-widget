@@ -19,7 +19,17 @@ adb logcat -c
 adb shell am start -W -n dev.codexbeer.android/.MainActivity
 sleep 8
 adb shell pidof dev.codexbeer.android
+adb shell cmd uimode night no
+sleep 2
+adb shell uiautomator dump /data/local/tmp/quota-ui.xml
+adb pull /data/local/tmp/quota-ui.xml .local/android-smoke/dashboard.xml
+grep -q 'Подключить компьютер' .local/android-smoke/dashboard.xml
+if grep -q 'Данные pairing QR' .local/android-smoke/dashboard.xml; then exit 1; fi
 adb exec-out screencap -p > .local/android-smoke/dashboard.png
+adb shell cmd uimode night yes
+sleep 2
+adb exec-out screencap -p > .local/android-smoke/dashboard-dark.png
+adb shell cmd uimode night no
 adb shell appops set dev.codexbeer.android SYSTEM_ALERT_WINDOW allow
 adb shell am start -W -a dev.codexbeer.SHOW_OVERLAY -n dev.codexbeer.android/.MainActivity
 sleep 5

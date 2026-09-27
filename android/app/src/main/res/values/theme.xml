@@ -1,0 +1,11 @@
+<resources>
+    <color name="launcher_background">#302316</color>
+    <style name="Theme.CodexBeer.Base" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">#FFFBF5</item>
+        <item name="android:statusBarColor">#FFFBF5</item>
+        <item name="android:navigationBarColor">#181715</item>
+        <item name="android:colorAccent">#805000</item>
+    </style>
+    <style name="Theme.CodexBeer" parent="Theme.CodexBeer.Base" />
+</resources>

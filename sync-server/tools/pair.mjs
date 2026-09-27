@@ -13,8 +13,9 @@ const post = (path, token, data) => new Promise((resolve, reject) => {
     method: 'POST', ca, timeout: 5000,
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   }, res => {
-    const chunks = [];
-    res.on('data', chunk => chunks.push(chunk));
+    const chunks = []; let size = 0;
+    res.on('data', chunk => { size += chunk.length; if (size > 65536) res.destroy(new Error('Oversized response')); else chunks.push(chunk); });
+    res.on('error', reject);
     res.on('end', () => {
       if (res.statusCode < 200 || res.statusCode >= 300) { reject(new Error(`Relay status ${res.statusCode}`)); return; }
       try { resolve(JSON.parse(Buffer.concat(chunks))); } catch (error) { reject(error); }

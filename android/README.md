@@ -23,13 +23,19 @@ Use the PC's LAN hostname/IP in its certificate and origin; `localhost` on the
 phone is the phone itself. Open only the configured relay port on your private
 network. Install the generated certificate explicitly on the test phone: only
 debug builds trust user-installed CAs. Release builds require a trusted chain.
-Scan the QR in the app, or paste its JSON. No Codex account credentials reach Android.
+Tap **Подключить компьютер** and scan the QR. The app has no JSON input; pairing persists across restarts. No Codex account credentials reach Android.
 
 The dashboard and active overlay use WSS with reconnect backoff up to 60 seconds.
 Closing both stops WSS; turning the screen off stops the overlay subscription.
 WorkManager provides a best-effort 15-minute background fallback. Android may
 delay it during Doze or after force-stop. Last values persist and become stale;
 missing values never become 0%.
+
+For mobile Internet, deploy the [public HTTPS relay](../sync-server/deploy/README.md).
+Its publicly trusted certificate requires no manual certificate installation on Android.
+
+The dashboard follows the system light/dark theme with amber accents. Controls for notifications,
+overlay and alerts are under **Настройки**.
 
 ## Optional FCM
 
